@@ -4,7 +4,7 @@
 
 ## TODO list
 
-1. Compile [libwebrtc](https://github.com/jremmons/pywebrtc.git)
+1. Compile [libwebrtc](https://github.com/aisouard/libwebrtc)
 
 2. Write a basic C++ program to send fake webcam data to
 [appr.tc](https://appr.tc) using the libwebrtc library.
