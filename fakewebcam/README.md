@@ -1,6 +1,6 @@
-# fakewecam
+# fakewebcam
 
-## prerequistes
+## prerequisites
 
 ```bash
 # install ffmpeg
