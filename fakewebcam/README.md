@@ -9,7 +9,7 @@ sudo apt-get install ffmpeg
 # install "video for linux" kernel module
 sudo apt-get install v4l2loopback-utils
 
-# insert the kernal module
+# insert the kernel module
 sudo modprobe v4l2loopback devices=1
 ```
 
