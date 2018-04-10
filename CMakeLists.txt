@@ -4,7 +4,8 @@ project(pywebrtc)
 find_package(LibWebRTC REQUIRED)
 include(${LIBWEBRTC_USE_FILE})
 
-target_link_libraries(my-app ${LIBWEBRTC_LIBRARIES})
+set(SOURCE_FILES main.cc)
+add_executable(pywebrtc ${SOURCE_FILES})
 
-set(SOURCE_FILES rtc.cc)
-add_executable(rtc ${SOURCE_FILES})
+target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
+
