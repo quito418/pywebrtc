@@ -18,9 +18,29 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_facto
 // 2. Peer Connection
 rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection;
 // 2. Peer Connection Observer
-PeerConnectionObserver peer_connection_observer(OnDataChannelCreated, OnIceCandidate);
+PeerConnectionObserver peer_connection_observer(OnDataChannel, OnIceCandidate);
 // 2. Configuration Settings
 webrtc::PeerConnectionInterface::RTCConfiguration configuration;
+// 4. Create Session Description Observer
+CreateSessionDescriptionObserver create_session_description_observer(OnSuccess);
+// 4. Set Session Description Observer
+SetSessionDescriptionObserver set_session_description_observer;
+
+// TODO: Functions for Peer Connection Observer
+// Unsure about this??
+void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
+}
+
+// Need JSON editor for this maybe picojson?
+void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {i
+
+}
+
+// 4. Functions for Create Session Description Observer
+void OnSuccess(webrtc::SessionDescriptionInterface* desc) { 
+	peer_connection->SetLocalDescription(&set_session_description_observer, desc);
+	// TODO: Figure out how to serialize (maybe stringify it or json it? then send to peer)
+}
 
 void createPeerConnectionInterface() {
 
@@ -44,6 +64,10 @@ void createPeerConnection() {
 	configuration.servers.push_back(ice_server);
 
 	peer_connection = peer_connection_factory->CreatePeerConnection(configuration, nullptr, nullptr, &peer_connection_observer);
+
+	// Some people set up a data channel here (not sure why)
+	// The official api says to create local media stream tracks but no reference code does (not sure why)
+	
 }
 
 int main(int argc, char **argv) {
@@ -60,6 +84,11 @@ int main(int argc, char **argv) {
 
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
     createPeerConnection();
+
+	// 3. ??
+
+	// 4. Create an offer, setLocalDescription, serialize and send to remote peer
+	peer_connection->CreateOffer(&create_session_description_observer, nullptr);
 
 	rtc::CleanupSSL();
 
