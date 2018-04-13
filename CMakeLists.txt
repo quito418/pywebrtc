@@ -8,9 +8,12 @@ include(${LIBWEBRTC_USE_FILE})
 #set(Boost_USE_MULTITHREADED ON)  
 #set(Boost_USE_STATIC_RUNTIME OFF) 
 #find_package(Boost COMPONENTS asio beast) 
-find_package(Boost) 
+set(BOOST_ROOT /usr/local)
+find_package(Boost COMPONENTS system REQUIRED) 
 
 
+#set(BOOST_LIBRARYDIR, /usr/include/boost)
+#set(BOOST_ROOT, /usr/include/boost)
 include_directories(${Boost_INCLUDE_DIRS}) 
 # Use the package PkgConfig to detect GTK+ headers/library files
 #FIND_PACKAGE(PkgConfig REQUIRED)

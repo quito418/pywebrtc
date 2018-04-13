@@ -14,8 +14,8 @@
 
 //[example_websocket_client
 
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
+#include "boost/beast/core.hpp"
+#include "boost/beast/websocket.hpp"
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <cstdlib>
@@ -39,8 +39,8 @@ int main(int argc, char** argv)
                 "    websocket-client-sync \"Hello, world!\"\n";
             return EXIT_FAILURE;
         }
-        auto const host = "http://ccr-frontend.jemmons.us/echo";
-        auto const port = 80;
+        auto const host = "https://ccr-frontend.jemmons.us/echo";
+        auto const port = "80";
         auto const text = argv[1];
 
         // The io_context is required for all I/O
