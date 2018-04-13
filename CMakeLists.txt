@@ -4,8 +4,14 @@ project(pywebrtc)
 find_package(LibWebRTC REQUIRED)
 include(${LIBWEBRTC_USE_FILE})
 
-find_package(Boost COMPONENTS system REQUIRED)
+#set(Boost_USE_STATIC_LIBS OFF) 
+#set(Boost_USE_MULTITHREADED ON)  
+#set(Boost_USE_STATIC_RUNTIME OFF) 
+#find_package(Boost COMPONENTS asio beast) 
+find_package(Boost) 
 
+
+include_directories(${Boost_INCLUDE_DIRS}) 
 # Use the package PkgConfig to detect GTK+ headers/library files
 #FIND_PACKAGE(PkgConfig REQUIRED)
 #PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
@@ -30,3 +36,9 @@ target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
 #TARGET_LINK_LIBRARIES(pywebrtc ${GTK3_LIBRARIES})
 
 add_executable(websocket websocket_client_sync.cpp)
+
+target_link_libraries(websocket ${Boost_LIBRARIES})
+
+
+
+
