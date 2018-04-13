@@ -6,7 +6,6 @@
 #include <webrtc/base/ssladapter.h>
 #include <webrtc/base/thread.h>
 #include <webrtc/base/physicalsocketserver.h>
-
 #include "picojson/picojson.h"
 
 class Connection {
@@ -121,27 +120,49 @@ void OnDataChannelMessage(const webrtc::DataBuffer& buffer);
 void OnAnswerCreated(webrtc::SessionDescriptionInterface* desc);
 void OnSuccess(webrtc::SessionDescriptionInterface* desc);
 
+picojson::array ice_array;
+
 // Set up web sockets from boost
 
+// These are all protected/abstract. Need to subclass. Use conductor.h?
 // 1. Peer Connection Factory that sets up the signaling and worker threads
 rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory;
 // 2. Peer Connection Observer
-PeerConnectionObserver peer_connection_observer(OnDataChannel, OnIceCandidate);
+// webrtc::PeerConnectionObserver peer_connection_observer(OnDataChannel, OnIceCandidate);
+//webrtc::PeerConnectionObserver peer_connection_observer(OnIceCandidate);
 // 2. Configuration Settings
 webrtc::PeerConnectionInterface::RTCConfiguration configuration;
 // 4. Create Session Description Observer
-CreateSessionDescriptionObserver create_session_description_observer(OnSuccess);
+//webrtc::CreateSessionDescriptionObserver create_session_description_observer(OnSuccess);
 // 4. Set Session Description Observer
-SetSessionDescriptionObserver set_session_description_observer;
+webrtc::SetSessionDescriptionObserver set_session_description_observer;
+
+
 
 // TODO: Functions for Peer Connection Observer
 // Unsure about this??
-void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
-}
+//void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
+//}
 
 // Need JSON editor for this maybe picojson?
-void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {i
+void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
+  picojson::object ice;
+  std::string candidate_str;
+  candidate->ToString(&candidate_str);
+  ice.insert(std::make_pair("candidate", picojson::value(candidate_str)));
+  ice.insert(std::make_pair("sdpMid", picojson::value(candidate->sdp_mid())));
+  ice.insert(std::make_pair("sdpMLineIndex", picojson::value(static_cast<double>(candidate->sdp_mline_index()))));
 
+
+  /*
+  Json::Value jmessage;
+  Json::StyledWriter writer;
+  jmessage["candidate"] = candidate_str;
+  jmessage["sdpMid"] = candidate->sdp_mid();
+  jmessage["sdpMLineIndex"] = candidate->sdp_mline_index();
+  str = writer.write(jmessage);
+  */
+  
 }
 
 
@@ -154,7 +175,7 @@ void createPeerConnectionInterface() {
     workerThread->SetName("worker_thread", NULL);
 
     if (!signalingThread->Start() || !workerThread->Start()) {
-        return 1;
+        return;
     }
 
     peer_connection_factory = webrtc::CreatePeerConnectionFactory(workerThread, signalingThread, NULL, NULL, NULL).release();
@@ -176,17 +197,15 @@ void createPeerConnection() {
 int main(int argc, char **argv) {
 
 	// Initialize ssl and thread manager
-    rtc::InitializeSSL();
-    rtc::InitRandom(rtc::Time());
-    rtc::ThreadManager::Instance()->WrapCurrentThread();
+  rtc::InitializeSSL();
+  rtc::InitRandom(rtc::Time());
+  rtc::ThreadManager::Instance()->WrapCurrentThread();
 	
-	
-
-    // 1. Create a PeerConnectionFactoryInterface
-	createPeerConnectionInterface()
+  // 1. Create a PeerConnectionFactoryInterface
+	createPeerConnectionInterface();
 
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
-    createPeerConnection();
+  createPeerConnection();
 
 	// 3. ??
 
