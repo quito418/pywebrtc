@@ -109,7 +109,16 @@ class Connection {
 
 	};
 
-	PeerConnectionObserver
+	PeerConnectionObserver pco;
+	DataConnectionObserver dco;
+	rtc::scoped_refptr<CreateSessionDescriptionObserver> csdo;
+	rtc::scoped_refptr<SetSessionDescriptionObserver> ssdo;
+
+	Connection() :
+		pco(*this),
+		dco(*this),
+		csdo(new rtc::RefCountedObject<CreateSessionDescriptionObserver>(*this)),
+      	ssdo(new rtc::RefCountedObject<SetSessionDescriptionObserver>(*this)) {
 
 }
 // Refer to the API at: https://webrtc.googlesource.com/src/+/master/api/peerconnectioninterface.h
