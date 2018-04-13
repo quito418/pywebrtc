@@ -1,22 +1,130 @@
+#include <iostream>
+#include <string>
+
 #include <webrtc/api/mediastreaminterface.h>
 #include <webrtc/api/peerconnectioninterface.h>
 #include <webrtc/base/ssladapter.h>
 #include <webrtc/base/thread.h>
-#include <iostream>
+#include <webrtc/base/physicalsocketserver.h>
 
+#include "picojson/picojson.h"
+
+class Connection {
+	public:
+		// Peer Connection
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection;
+		// Data Channel
+		rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel;
+		// SDP 
+		std::string sdp_type;
+		picojson::array ice_array;
+
+	// On session success, set local description and send information to remote
+	void sessionSuccess(webrtc::SessionDescriptionInterface* desc) {
+		peer_connection->SetLocalDescription(&set_session_description_observer, desc);
+		// TODO: Figure out how to serialize (maybe stringify it or json it? then send to peer)
+	}
+
+	// TODO: Implement this
+	void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
+
+	}
+
+	// Used to receive callbacks from the PeerConnection
+	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
+		private:
+			Connection &parent;
+
+		public:
+		PeerConnectionObserver(Connection& parent) : parent(parent) {};
+
+		void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState new_state) override {
+			std::cout << "PeerConnectionObserver Signaling Change" << std::endl;
+		};
+
+		// TODO
+		void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {};
+		
+		// TODO
+		void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface) {};
+
+		// TODO
+		void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) override {};
+
+		// TODO
+		void OnRenegotiationNeeded() override {};
+
+		// TODO
+		void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState new_state) override {};
+
+		// TODO
+		void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState new_state) override {};
+
+		// TODO
+		void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {};
+	};
+
+	// Used to receive callbacks from the Data Channel 
+	class DataChannelObserver : public webrtc::DataChannelObserver {
+		private:
+			Connection &parent;
+		public
+			DataChannelObserver(Connection& parent) : parent(parent) {};
+
+		// TODO
+		void OnStateChange() override {};
+		
+		// TODO
+		void OnMessage(const webrtc::DataBuffer& buffer) override {};
+
+		// TODO
+		void OnBufferedAmountChange(uint64_t previous_amount) override {};
+	};
+
+	// Used to receive callbacks from creating the session description
+	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
+		private:
+			Connection &parent;
+		public
+			CreateSessionDescriptionObserver(Connection& parent) : parent(parent) {};
+
+		// TODO
+		void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {};	
+
+		// TODO
+		void OnFailure(const std::string& error) override {};
+	};
+
+	// Used to receive callbacks from setting the session description (not really used but necessary as a parameter)
+	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
+		private:
+			Connection &parent;
+		public
+			SetSessionDescriptionObserver(Connection& parent) : parent(parent) {};
+
+		//TODO
+		void OnSuccess() override {};	
+
+		// TODO
+		void OnFailure(const std::string& error) override {};
+
+	};
+
+	PeerConnectionObserver
+
+}
 // Refer to the API at: https://webrtc.googlesource.com/src/+/master/api/peerconnectioninterface.h
 
-void OnDataChannelCreated(webrtc::DataChannelInterface* channel);
+void OnDataChannel(webrtc::DataChannelInterface* channel);
 void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
 void OnDataChannelMessage(const webrtc::DataBuffer& buffer);
 void OnAnswerCreated(webrtc::SessionDescriptionInterface* desc);
+void OnSuccess(webrtc::SessionDescriptionInterface* desc);
 
 // Set up web sockets from boost
 
 // 1. Peer Connection Factory that sets up the signaling and worker threads
 rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory;
-// 2. Peer Connection
-rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection;
 // 2. Peer Connection Observer
 PeerConnectionObserver peer_connection_observer(OnDataChannel, OnIceCandidate);
 // 2. Configuration Settings
@@ -36,11 +144,6 @@ void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {i
 
 }
 
-// 4. Functions for Create Session Description Observer
-void OnSuccess(webrtc::SessionDescriptionInterface* desc) { 
-	peer_connection->SetLocalDescription(&set_session_description_observer, desc);
-	// TODO: Figure out how to serialize (maybe stringify it or json it? then send to peer)
-}
 
 void createPeerConnectionInterface() {
 
