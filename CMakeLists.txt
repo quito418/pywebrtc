@@ -14,14 +14,21 @@ find_package(Boost COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS}) 
 include_directories(${OPENSSL_INCLUDE_DIRS})
 
-# add source files
-set(SOURCE_FILES main.cc conductor.cc)
-
-# create executable
+# create websocket executable
 add_executable(websocket websocket_client_sync.cpp)
 
-
-# link libraries
+# link websocket libraries
 target_link_libraries(websocket ${Boost_LIBRARIES})
 target_link_libraries(websocket ${OPENSSL_LIBRARIES})
 # target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
+
+# add source files
+set(SOURCE_FILES main.cc conductor.cc)
+
+# create pywebrtc executable
+add_executable(pywebrtc ${SOURCE_FILES})
+
+# link pywebrtc libraries
+target_link_libraries(pywebrtc ${Boost_LIBRARIES})
+target_link_libraries(pywebrtc ${OPENSSL_LIBRARIES})
+target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
