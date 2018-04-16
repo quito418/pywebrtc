@@ -3,8 +3,9 @@ project(pywebrtc)
 
 find_package(LibWebRTC REQUIRED)
 include(${LIBWEBRTC_USE_FILE})
-set(GCC_COVERAGE_LINK_FLAGS "-lssl -lcrypt")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+
+find_package(OpenSSL)
+
 #set(Boost_USE_STATIC_LIBS OFF) 
 #set(Boost_USE_MULTITHREADED ON)  
 #set(Boost_USE_STATIC_RUNTIME OFF) 
@@ -16,6 +17,7 @@ find_package(Boost COMPONENTS system REQUIRED)
 #set(BOOST_LIBRARYDIR, /usr/include/boost)
 #set(BOOST_ROOT, /usr/include/boost)
 include_directories(${Boost_INCLUDE_DIRS}) 
+include_directories(${OPENSSL_INCLUDE_DIRS})
 # Use the package PkgConfig to detect GTK+ headers/library files
 #FIND_PACKAGE(PkgConfig REQUIRED)
 #PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
@@ -42,6 +44,7 @@ set(SOURCE_FILES main.cc conductor.cc)
 add_executable(websocket websocket_client_sync.cpp)
 
 target_link_libraries(websocket ${Boost_LIBRARIES})
+target_link_libraries(websocket ${OPENSSL_LIBRARIES})
 
 
 
