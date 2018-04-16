@@ -5,24 +5,21 @@
 //
 // Official repository: https://github.com/boostorg/beast
 //
+#include "example/common/root_certificates.hpp"
 
-//------------------------------------------------------------------------------
-//
-// Example: WebSocket client, synchronous
-//
-//------------------------------------------------------------------------------
-
-//[example_websocket_client
-
-#include "boost/beast/core.hpp"
-#include "boost/beast/websocket.hpp"
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/beast/websocket/ssl.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/stream.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <cstddef>
 
 using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
+namespace ssl = boost::asio::ssl;               // from <boost/asio/ssl.hpp>
 namespace websocket = boost::beast::websocket;  // from <boost/beast/websocket.hpp>
 
 // Sends a WebSocket message and prints the response
@@ -34,27 +31,36 @@ int main(int argc, char** argv)
         if(argc != 2)
         {
             std::cerr <<
-                "Usage: websocket-client-sync <text>\n" <<
+                "Usage: websocket-client-sync-ssl <host> <port> <text>\n" <<
                 "Example:\n" <<
-                "    websocket-client-sync \"Hello, world!\"\n";
+                "    websocket-client-sync-ssl echo.websocket.org 443 \"Hello, world!\"\n";
             return EXIT_FAILURE;
         }
-        auto const host = "https://ccr-frontend.jemmons.us/echo";
-        auto const port = "80";
+        auto const host = "ccr-frontend.jemmons.us/echo";
+        auto const port = "443";
         auto const text = argv[1];
 
         // The io_context is required for all I/O
         boost::asio::io_context ioc;
 
+        // The SSL context is required, and holds certificates
+        ssl::context ctx{ssl::context::sslv23_client};
+
+        // This holds the root certificate used for verification
+        load_root_certificates(ctx);
+
         // These objects perform our I/O
         tcp::resolver resolver{ioc};
-        websocket::stream<tcp::socket> ws{ioc};
+        websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
 
         // Look up the domain name
         auto const results = resolver.resolve(host, port);
 
         // Make the connection on the IP address we get from a lookup
-        boost::asio::connect(ws.next_layer(), results.begin(), results.end());
+        boost::asio::connect(ws.next_layer().next_layer(), results.begin(), results.end());
+
+        // Perform the SSL handshake
+        ws.next_layer().handshake(ssl::stream_base::client);
 
         // Perform the websocket handshake
         ws.handshake(host, "/");
@@ -63,10 +69,10 @@ int main(int argc, char** argv)
         ws.write(boost::asio::buffer(std::string(text)));
 
         // This buffer will hold the incoming message
-        boost::beast::multi_buffer buffer;
+        boost::beast::multi_buffer b;
 
         // Read a message into our buffer
-        ws.read(buffer);
+        ws.read(b);
 
         // Close the WebSocket connection
         ws.close(websocket::close_code::normal);
@@ -74,7 +80,7 @@ int main(int argc, char** argv)
         // If we get here then the connection is closed gracefully
 
         // The buffers() function helps print a ConstBufferSequence
-        std::cout << boost::beast::buffers(buffer.data()) << std::endl;
+        std::cout << boost::beast::buffers(b.data()) << std::endl;
     }
     catch(std::exception const& e)
     {
@@ -83,5 +89,3 @@ int main(int argc, char** argv)
     }
     return EXIT_SUCCESS;
 }
-
-//]

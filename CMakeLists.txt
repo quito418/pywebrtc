@@ -31,9 +31,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 #set(SOURCE_FILES main_example.cc conductor.cc)
 set(SOURCE_FILES main.cc conductor.cc)
 #set(SOURCE_FILES examples/peerconnection/client/linux/main.cc)
-add_executable(pywebrtc ${SOURCE_FILES})
+#add_executable(pywebrtc ${SOURCE_FILES})
 
-target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
+#target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
 
 # Link the target to the GTK+ libraries
 #TARGET_LINK_LIBRARIES(pywebrtc ${GTK3_LIBRARIES})
