@@ -80,6 +80,7 @@ int main(int argc, char** argv)
             ws.close(websocket::close_code::normal);
         }
         catch(std::exception const& e) {
+           std::cout << "Close error: " << e.what() << std::endl; 
         }
 
         // If we get here then the connection is closed gracefully
