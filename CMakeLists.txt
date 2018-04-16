@@ -3,7 +3,8 @@ project(pywebrtc)
 
 find_package(LibWebRTC REQUIRED)
 include(${LIBWEBRTC_USE_FILE})
-
+set(GCC_COVERAGE_LINK_FLAGS "-lssl -lcrypt")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 #set(Boost_USE_STATIC_LIBS OFF) 
 #set(Boost_USE_MULTITHREADED ON)  
 #set(Boost_USE_STATIC_RUNTIME OFF) 

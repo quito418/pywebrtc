@@ -5,7 +5,7 @@
 //
 // Official repository: https://github.com/boostorg/beast
 //
-#include "example/common/root_certificates.hpp"
+#include "common/root_certificates.hpp"
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
