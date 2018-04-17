@@ -8,6 +8,9 @@
 #include <webrtc/base/physicalsocketserver.h>
 #include "picojson/picojson.h"
 
+// Refer to the API at: https://webrtc.googlesource.com/src/+/master/api/peerconnectioninterface.h
+
+// Implementation for peer to peer connection observers (which manage callbacks)
 class Connection {
 	public:
 		// Peer Connection
@@ -16,6 +19,7 @@ class Connection {
 		rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel;
 		// SDP 
 		std::string sdp_type;
+		// ICE Information
 		picojson::array ice_array;
 
 	// On session success, set local description and send information to remote
@@ -24,9 +28,14 @@ class Connection {
 		// TODO: Figure out how to serialize (maybe stringify it or json it? then send to peer)
 	}
 
-	// TODO: Implement this
 	void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
-
+		std::cout << "On ICE Candidate" << std::endl;
+		picojosn::object ice;
+		candidate->ToString(&candidate_str);
+    	ice.insert(std::make_pair("candidate", picojson::value(candidate_str)));
+    	ice.insert(std::make_pair("sdpMid", picojson::value(candidate->sdp_mid())));
+    	ice.insert(std::make_pair("sdpMLineIndex", picojson::value(static_cast<double>(candidate->sdp_mline_index()))));
+    	ice_array.push_back(picojson::value(ice));
 	}
 
 	// Used to receive callbacks from the PeerConnection
@@ -41,26 +50,35 @@ class Connection {
 			std::cout << "PeerConnectionObserver Signaling Change" << std::endl;
 		};
 
-		// TODO
-		void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {};
+		void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
+			std::cout << "PeerConnectionObserver Add Stream" << std::endl;
+		};
 		
-		// TODO
-		void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface) {};
+		void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface) {
+			std::cout << "PeerConnectionObserver Remove Stream" << std::endl;
+		};
 
-		// TODO
-		void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) override {};
+		void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) override {
+			std::cout << "PeerConnectionObserver On Data Channel(" << data_channel << std::endl;
+			parent.data_channel = data_channel;
+			parent.data_channel->RegisterObserver(&parent.dco);
+		};
 
-		// TODO
-		void OnRenegotiationNeeded() override {};
+		void OnRenegotiationNeeded() override {
+			std::cout << "PeerConnectionObserver On Renegotiation Needed" << std::endl;
+		};
 
-		// TODO
-		void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState new_state) override {};
+		void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState new_state) override {
+			std::cout << "PeerConnectionObserver On Ice Connection Change" << std::endl;
+		};
 
-		// TODO
-		void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState new_state) override {};
+		void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState new_state) override {
+			std::cout << "PeerConnectionObserver On Ice Gathering Change" << std::endl;
+		};
 
-		// TODO
-		void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {};
+		void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {
+			std::cout << "PeerConnectionObserver On Ice Candidate" << std::endl;
+		};
 	};
 
 	// Used to receive callbacks from the Data Channel 
@@ -70,14 +88,18 @@ class Connection {
 		public
 			DataChannelObserver(Connection& parent) : parent(parent) {};
 
-		// TODO
-		void OnStateChange() override {};
+		void OnStateChange() override {
+			std::cout << "DataChannelObserver On State Change" << std::endl;
+		};
 		
-		// TODO
-		void OnMessage(const webrtc::DataBuffer& buffer) override {};
+		void OnMessage(const webrtc::DataBuffer& buffer) override {
+			std::cout << "DataChannelObserver On Message" << std::endl;
+			std::cout << std::string(buffer.data.data<char>(), buffer.data.size()) << std::endl;
+		};
 
-		// TODO
-		void OnBufferedAmountChange(uint64_t previous_amount) override {};
+		void OnBufferedAmountChange(uint64_t previous_amount) override {
+			std::cout << "DataChannelObserver On Buffered Amount Change: " << previous_amount << std::endl;
+		};
 	};
 
 	// Used to receive callbacks from creating the session description
@@ -87,11 +109,14 @@ class Connection {
 		public
 			CreateSessionDescriptionObserver(Connection& parent) : parent(parent) {};
 
-		// TODO
-		void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {};	
+		void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
+			std::cout << "CreateSessionDescriptionObserver Success Callback" << std::endl;
+			parent.sessionSuccess(desc);
+		};	
 
-		// TODO
-		void OnFailure(const std::string& error) override {};
+		void OnFailure(const std::string& error) override {
+			std::cout << "CreateSessionDescriptionObserver Failure Callback. Error: " << error << std::endl;
+		};
 	};
 
 	// Used to receive callbacks from setting the session description (not really used but necessary as a parameter)
@@ -101,11 +126,13 @@ class Connection {
 		public
 			SetSessionDescriptionObserver(Connection& parent) : parent(parent) {};
 
-		//TODO
-		void OnSuccess() override {};	
+		void OnSuccess() override {
+			std::cout << "SetSessionDescriptionObserver Success Callback" << std::endl;
+		};	
 
-		// TODO
-		void OnFailure(const std::string& error) override {};
+		void OnFailure(const std::string& error) override {
+			std::cout << "SetSessionDescriptionObserver Failure Callback" << std::endl;
+		};
 
 	};
 
@@ -121,100 +148,65 @@ class Connection {
       	ssdo(new rtc::RefCountedObject<SetSessionDescriptionObserver>(*this)) {
 
 }
-// Refer to the API at: https://webrtc.googlesource.com/src/+/master/api/peerconnectioninterface.h
 
-void OnDataChannel(webrtc::DataChannelInterface* channel);
-void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
-void OnDataChannelMessage(const webrtc::DataBuffer& buffer);
-void OnAnswerCreated(webrtc::SessionDescriptionInterface* desc);
-void OnSuccess(webrtc::SessionDescriptionInterface* desc);
-
-picojson::array ice_array;
-
-// Set up web sockets from boost
-
-// These are all protected/abstract. Need to subclass. Use conductor.h?
-// 1. Peer Connection Factory that sets up the signaling and worker threads
 rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory;
-// 2. Peer Connection Observer
-// webrtc::PeerConnectionObserver peer_connection_observer(OnDataChannel, OnIceCandidate);
-//webrtc::PeerConnectionObserver peer_connection_observer(OnIceCandidate);
-// 2. Configuration Settings
 webrtc::PeerConnectionInterface::RTCConfiguration configuration;
-// 4. Create Session Description Observer
-//webrtc::CreateSessionDescriptionObserver create_session_description_observer(OnSuccess);
-// 4. Set Session Description Observer
-webrtc::SetSessionDescriptionObserver set_session_description_observer;
+Connection connection;
+rtc::PhysicalSocketServer socket_server;
 
-
-
-// TODO: Functions for Peer Connection Observer
-// Unsure about this??
-//void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
-//}
-
-// Need JSON editor for this maybe picojson?
-void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
-  picojson::object ice;
-  std::string candidate_str;
-  candidate->ToString(&candidate_str);
-  ice.insert(std::make_pair("candidate", picojson::value(candidate_str)));
-  ice.insert(std::make_pair("sdpMid", picojson::value(candidate->sdp_mid())));
-  ice.insert(std::make_pair("sdpMLineIndex", picojson::value(static_cast<double>(candidate->sdp_mline_index()))));
-
-
-  /*
-  Json::Value jmessage;
-  Json::StyledWriter writer;
-  jmessage["candidate"] = candidate_str;
-  jmessage["sdpMid"] = candidate->sdp_mid();
-  jmessage["sdpMLineIndex"] = candidate->sdp_mline_index();
-  str = writer.write(jmessage);
-  */
-  
-}
-
-
-void createPeerConnectionInterface() {
-
-    rtc::Thread *signalingThread = new rtc::Thread();
-    rtc::Thread *workerThread = new rtc::Thread();
-
-    signalingThread->SetName("signaling_thread", NULL);
-    workerThread->SetName("worker_thread", NULL);
-
-    if (!signalingThread->Start() || !workerThread->Start()) {
-        return;
+class CustomRunnable : public rtc::Runnable {
+ public:
+  void Run(rtc::Thread* subthread) override {
+    peer_connection_factory = webrtc::CreatePeerConnectionFactory(
+        webrtc::CreateBuiltinAudioEncoderFactory(),
+        webrtc::CreateBuiltinAudioDecoderFactory());
+    if (peer_connection_factory.get() == nullptr) {
+      std::cout << "Error on CreatePeerConnectionFactory." << std::endl;
+      return;
     }
 
-    peer_connection_factory = webrtc::CreatePeerConnectionFactory(workerThread, signalingThread, NULL, NULL, NULL).release();
-}
+    subthread->Run();
+  }
+};
 
-void createPeerConnection() {
-	// Set up configuration for STUN server
-	webrtc::PeerConnectionInterface::IceServer ice_server;
-	ice_server.uri = "stun:stun.l.google.com:19302";
-	configuration.servers.push_back(ice_server);
+bool createPeerConnection() {
+	webrtc::PeerConnectionInterface::RTCConfiguration config;
+	webrtc::PeerConnectionInterface::IceServer server;
+	// TODO: Put our own STUN server in here later
+	server.uri = "stun:stun.1.google.com:19302";
+	configuration.servers.push_back(server);
 
-	peer_connection = peer_connection_factory->CreatePeerConnection(configuration, nullptr, nullptr, &peer_connection_observer);
-
-	// Some people set up a data channel here (not sure why)
-	// The official api says to create local media stream tracks but no reference code does (not sure why)
+	connection.peer_connection = peer_connection_factory->CreatePeerConnection(configuration, nullptr, nullptr, &connection.pco);
 	
+	// TODO: Swap out for video stream
+	webrtc::DataChannel config;
+	connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
+	connection.data_channel->RegisterObserver(&connection.dco);
+
+	if (connection.peer_connection.get() == nullptr) {
+    	peer_connection_factory = nullptr;
+    	std::cout << "Error on CreatePeerConnection." << std::endl;
+    	return;
+  	}
+
+  	connection.sdp_type = "offer"; 
+  	connection.peer_connection->CreateOffer(connection.csdo, nullptr);
 }
 
 int main(int argc, char **argv) {
 
 	// Initialize ssl and thread manager
-  rtc::InitializeSSL();
-  rtc::InitRandom(rtc::Time());
-  rtc::ThreadManager::Instance()->WrapCurrentThread();
+
+ 	rtc::InitializeSSL();
+ 	rtc::InitRandom(rtc::Time());
+ 	rtc::ThreadManager::Instance()->WrapCurrentThread();
 	
-  // 1. Create a PeerConnectionFactoryInterface
-	createPeerConnectionInterface();
+  	// 1. Create a PeerConnectionFactoryInterface
+	CustomRunnable runnable;
+	thread->Start(&runnable);
 
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
-  createPeerConnection();
+ 	createPeerConnection();
 
 	// 3. ??
 
