@@ -25,12 +25,19 @@ class Connection {
 	// On session success, set local description and send information to remote
 	void sessionSuccess(webrtc::SessionDescriptionInterface* desc) {
 		peer_connection->SetLocalDescription(&set_session_description_observer, desc);
-		// TODO: Figure out how to serialize (maybe stringify it or json it? then send to peer)
+		picojson::object information;
+		
+		std::string sdp;
+		desc->ToString(&sdp);
+		information.insert(std::make_pair("sdp", picojson::value(sdp)));
+		information.insert(std::make_pair("type", picjson::value(sdp_type)));
+
+		// TODO: Figure out how to send to signaling server
 	}
 
 	void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
 		std::cout << "On ICE Candidate" << std::endl;
-		picojosn::object ice;
+		picojson::object ice;
 		candidate->ToString(&candidate_str);
     	ice.insert(std::make_pair("candidate", picojson::value(candidate_str)));
     	ice.insert(std::make_pair("sdpMid", picojson::value(candidate->sdp_mid())));
@@ -149,6 +156,7 @@ class Connection {
 
 }
 
+std::unique_ptr<rtc::Thread> thread;
 rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory;
 webrtc::PeerConnectionInterface::RTCConfiguration configuration;
 Connection connection;
@@ -178,41 +186,142 @@ bool createPeerConnection() {
 
 	connection.peer_connection = peer_connection_factory->CreatePeerConnection(configuration, nullptr, nullptr, &connection.pco);
 	
-	// TODO: Swap out for video stream
-	webrtc::DataChannel config;
-	connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
-	connection.data_channel->RegisterObserver(&connection.dco);
-
+	
 	if (connection.peer_connection.get() == nullptr) {
     	peer_connection_factory = nullptr;
     	std::cout << "Error on CreatePeerConnection." << std::endl;
     	return;
   	}
 
+}
+
+/** 
+	callerOffer: establishes the data channel to communicate and
+				 then creates an offer to the callee
+	@param nothing
+	@return nothing
+*/
+void callerOffer() {
+
+	// TODO: Swap out for video stream
+	webrtc::DataChannel config;
+	connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
+	connection.data_channel->RegisterObserver(&connection.dco);
+
   	connection.sdp_type = "offer"; 
   	connection.peer_connection->CreateOffer(connection.csdo, nullptr);
 }
 
+
+void callerSetRemoteDescription(const std::string& parameter) {
+	webrtc::SdpParseError error;
+ 	webrtc::SessionDescriptionInterface* session_description(
+ 	webrtc::CreateSessionDescription("answer", parameter, &error));
+ 	if (session_description == nullptr) {
+    	std::cout << "Error on CreateSessionDescription." << std::endl
+              << error.line << std::endl
+              << error.description << std::endl;
+  	}
+  	connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
+}
+
+
+
+// TODO: We are getting a json object as an offer from the web socket, figure out how to extract the sdp from it using picojson
+/** 
+	calleeAnswer: Function sets the remote description of the caller
+				  and then creates an answer for the caller
+	@param parameter: the string offer sent by the caller
+	@return  nothing
+*/
+void calleeAnswer(const std::string& parameter) {
+	webrtc::SdpParseError error;
+  	webrtc::SessionDescriptionInterface* session_description(
+    webrtc::CreateSessionDescription("offer", parameter, &error));
+
+  	if (session_description == nullptr) {
+    	std::cout << "Error on CreateSessionDescription." << std::endl
+              << error.line << std::endl
+              << error.description << std::endl;
+  	}
+
+  	connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
+
+  	connection.sdp_type = "answer";
+  	connection.peer_connection->CreateAnswer(connection.csdo, nullptr);
+}
+
+//TODO: Figure out how to send this to the signaling server?
+void sendICEInformation() {
+	std::cout << picojson::value(connection.ice_array).serialize(true) << std::endl;
+	connection.ice_array.clear();
+}
+
+void setICEInformation() {
+	picojson::value v;
+	std::string err = picojson::parse(v, parameter);
+	if (!err.empty()) {
+    	std::cout << "Error on parse json : " << err << std::endl;
+    	return;
+  	}
+
+	webrtc::SdpParseError err_sdp;
+  	for (auto& ice_it : v.get<picojson::array>()) {
+    	picojson::object& ice_json = ice_it.get<picojson::object>();
+    	webrtc::IceCandidateInterface* ice =
+      	CreateIceCandidate(ice_json.at("sdpMid").get<std::string>(),
+                         static_cast<int>(ice_json.at("sdpMLineIndex").get<double>()),
+                         ice_json.at("candidate").get<std::string>(),
+                         &err_sdp);
+    	if (!err_sdp.line.empty() && !err_sdp.description.empty()) {
+      		std::cout << "Error on CreateIceCandidate" << std::endl
+                << err_sdp.line << std::endl
+                << err_sdp.description << std::endl;
+      	return;
+    	}
+    	connection.peer_connection->AddIceCandidate(ice);
+  	}
+}
+
+void disconnectFromCurrentPeer() {
+	// TODO: Send message to other peer to disconnect
+	connection.peer_connection->Close();
+	connection.peer_connection = nullptr;
+	connection.data_channel = nullptr;
+	peer_connection_factory = nullptr;
+
+	thread->Quit();
+}
+
 int main(int argc, char **argv) {
 
-	// Initialize ssl and thread manager
+	// Set which role we are
+	if(argc != 2)
+    {
+       std::cerr <<
+                "Usage: main <role>\n" <<
+                "Example:\n" <<
+                "    main server \n main client"\n";
+            return EXIT_FAILURE;
+    };
 
+	auto const role = argv[1];
+
+	// Initialize ssl and thread manager
  	rtc::InitializeSSL();
  	rtc::InitRandom(rtc::Time());
- 	rtc::ThreadManager::Instance()->WrapCurrentThread();
 	
   	// 1. Create a PeerConnectionFactoryInterface
+	thread.reset(new rtc::Thread(&socket_server));
 	CustomRunnable runnable;
 	thread->Start(&runnable);
 
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
  	createPeerConnection();
 
-	// 3. ??
-
-	// 4. Create an offer, setLocalDescription, serialize and send to remote peer
-	peer_connection->CreateOffer(&create_session_description_observer, nullptr);
-
+	// 3. TODO Conditionally Operate on Web Socket Information
+	// Bigger TODO is to set up something to listen to web sockets
+	thread.reset();
 	rtc::CleanupSSL();
 
 	return 0;
