@@ -31,13 +31,14 @@ int main(int argc, char** argv)
         if(argc != 2)
         {
             std::cerr <<
-                "Usage: websocket-client-sync-ssl <host> <port> <text>\n" <<
+                "Usage: websocket <text>\n" <<
                 "Example:\n" <<
-                "    websocket-client-sync-ssl echo.websocket.org 443 \"Hello, world!\"\n";
+                "    websocket \"Hello, world!\"\n";
             return EXIT_FAILURE;
         }
-        auto const host = "ccr-frontend.jemmons.us/echo";
+        auto const host = "ccr-frontend.jemmons.us";
         auto const port = "443";
+        auto const path = "echo";
         auto const text = argv[1];
 
         // The io_context is required for all I/O
@@ -63,7 +64,7 @@ int main(int argc, char** argv)
         ws.next_layer().handshake(ssl::stream_base::client);
 
         // Perform the websocket handshake
-        ws.handshake(host, "/");
+        ws.handshake(host, path);
 
         // Send the message
         ws.write(boost::asio::buffer(std::string(text)));
@@ -74,8 +75,13 @@ int main(int argc, char** argv)
         // Read a message into our buffer
         ws.read(b);
 
-        // Close the WebSocket connection
-        ws.close(websocket::close_code::normal);
+        try {
+            // Close the WebSocket connection
+            ws.close(websocket::close_code::normal);
+        }
+        catch(std::exception const& e) {
+           std::cout << "Close error: " << e.what() << std::endl; 
+        }
 
         // If we get here then the connection is closed gracefully
 
