@@ -1,13 +1,30 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <cstdlib>
+#include <cstddef>
 
+// WebRTC Dependencies
 #include <webrtc/api/mediastreaminterface.h>
 #include <webrtc/api/peerconnectioninterface.h>
 #include <webrtc/base/ssladapter.h>
 #include <webrtc/base/thread.h>
 #include <webrtc/base/physicalsocketserver.h>
+
+// JSON Parser Dependencies
 #include "picojson/picojson.h"
+
+#include "common/root_certificates.hpp"
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/beast/websocket/ssl.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/stream.hpp>
+
+using tcp = boost::asio::ip::tcp;
+namespace ssl = boost::asio::ssl;
+namespace websocket = boost::beast::websocket;
 
 // Refer to the API at: https://webrtc.googlesource.com/src/+/master/api/peerconnectioninterface.h
 
@@ -22,6 +39,12 @@ class Connection {
 		std::string sdp_type;
 		// ICE Information
 		picojson::array ice_array;
+		
+		//websocket::stream<<ssl::stream<tcp::socket>>* ws;
+
+	/*void initWebSocket(websocket::stream<ssl::stream<tcp::socket>>& ws_) {
+		ws = ws_;
+	}*/
 
 	// On session success, set local description and send information to remote
 	void sessionSuccess(webrtc::SessionDescriptionInterface* desc) {
@@ -149,7 +172,7 @@ class Connection {
 	DataChannelObs dco;
 	rtc::scoped_refptr<CreateSessionDescriptionObs> csdo;
 	rtc::scoped_refptr<SetSessionDescriptionObs> ssdo;
-
+	
 	Connection() :
 		pco(*this),
 		dco(*this),
@@ -157,11 +180,14 @@ class Connection {
       	ssdo(new rtc::RefCountedObject<SetSessionDescriptionObs>(*this)) {}
 };
 
+// Variables needed for the implementation
 std::unique_ptr<rtc::Thread> thread;
 rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory;
 webrtc::PeerConnectionInterface::RTCConfiguration configuration;
 Connection connection;
 rtc::PhysicalSocketServer socket_server;
+
+//typedef websocket::stream<<ssl::stream<tcp::socket>> ssl_stream;
 
 class CustomRunnable : public rtc::Runnable {
  public:
@@ -178,6 +204,7 @@ class CustomRunnable : public rtc::Runnable {
 
 
 void createPeerConnection() {
+	//connection = new Connection(ws);
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
 	// STUN servers: https://github.com/jremmons/ccr-web/blob/master/static/js/app.js
@@ -306,6 +333,56 @@ void disconnectFromCurrentPeer() {
 	thread->Quit();
 }
 
+
+/*void runWebSocket(auto const host, auto const port, auto const path) {
+	try
+	{
+		// The io_context is required for all I/O
+		boost::asio::io_context ioc;
+
+		// The SSL context is required, and holds certificates
+		ssl::context ctx{ssl::context::sslv23_client};
+
+		// This holds the root certificate used for verification
+		load_root_certificates(ctx);
+
+		// These objects perform our I/O
+		tcp::resolver resolver{ioc};
+		ssl_stream ws(ioc, ctx);
+
+		// Look up the domain name
+		auto const results = resolver.resolve(host, port);
+
+		// Make the connection on the IP address we get from a lookup
+		boost::asio::connect(ws.next_layer().next_layer(), results.begin(), results.end());
+
+		// Perform the SSL handshake
+		ws.next_layer().handshake(ssl::stream_base::client);
+
+		// Perform the websocket handshake
+		ws.handshake(host, path);
+
+
+		// This buffer will hold the incoming message
+		boost::beast::multi_buffer b;
+
+		// TODO: Edit this so that we loop
+
+		// Read a message into our buffer
+		ws.read(b);
+
+		// Close the WebSocket connection
+		ws.close(websocket::close_code::normal);
+
+	}
+	catch(std::exception const& e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
+
+}*/
+
 int main(int argc, char **argv) {
 
 	// Set which role we are
@@ -330,12 +407,17 @@ int main(int argc, char **argv) {
 	CustomRunnable runnable;
   	thread->Start(&runnable);
 
+	
+	// 2. Set up web socket connection to signaling server
+	auto const host = "ccr-frontend-0.jemmons.us";
+	auto const port = "443";
+	auto const path = "ccr";
+	
+	//runWebSocket(host, port, path);
+	
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
  	createPeerConnection();
 
-	// 3. TODO Conditionally Operate on Web Socket Information
-	// Bigger TODO is to set up something to listen to web sockets
-	
 
 	thread.reset();
 	rtc::CleanupSSL();

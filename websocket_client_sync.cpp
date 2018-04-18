@@ -22,6 +22,11 @@ using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 namespace ssl = boost::asio::ssl;               // from <boost/asio/ssl.hpp>
 namespace websocket = boost::beast::websocket;  // from <boost/beast/websocket.hpp>
 
+void sendMessage(websocket::stream<ssl::stream<tcp::socket>>& ws, char* const text) {
+	ws.write(boost::asio::buffer(std::string(text)));
+
+}
+
 // Sends a WebSocket message and prints the response
 int main(int argc, char** argv)
 {
@@ -36,7 +41,7 @@ int main(int argc, char** argv)
                 "    websocket \"Hello, world!\"\n";
             return EXIT_FAILURE;
         }
-        auto const host = "ccr-frontend.jemmons.us";
+        auto const host = "ccr-frontend-0.jemmons.us";
         auto const port = "443";
         auto const path = "echo";
         auto const text = argv[1];
@@ -67,8 +72,10 @@ int main(int argc, char** argv)
         ws.handshake(host, path);
 
         // Send the message
-        ws.write(boost::asio::buffer(std::string(text)));
+		sendMessage(ws, text);
+		//ws.write(boost::asio::buffer(std::string(text)));
 
+        
         // This buffer will hold the incoming message
         boost::beast::multi_buffer b;
 
