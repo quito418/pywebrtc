@@ -17,6 +17,7 @@
 #include <iostream>
 #include <string>
 #include <cstddef>
+#include "picojson/picojson.h"
 
 using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 namespace ssl = boost::asio::ssl;               // from <boost/asio/ssl.hpp>
@@ -28,7 +29,6 @@ void send_websockets_message(std::string host, std::string port,
 // Sends a WebSocket message and prints the response
 int main(int argc, char** argv)
 {
-      // Check command line arguments.
       if(argc != 2)
       {
           std::cerr <<
@@ -37,11 +37,18 @@ int main(int argc, char** argv)
               "    websocket \"Hello, world!\"\n";
           return EXIT_FAILURE;
       }
+      auto const connection_id = argv[1];
+      picojson::object message;
+      message.insert(std::make_pair("type", picojson::value("kind")));
+      message.insert(std::make_pair("kind", picojson::value("server")));
+      message.insert(std::make_pair("connection_id", picojson::value(connection_id)));
       auto const host = "ccr-frontend-0.jemmons.us";
       auto const port = "443";
-      auto const path = "echo";
-      auto const text = argv[1];
+      auto const path = "ccr";
+      std::string text = picojson::value(message).serialize();
+      std::cout << text << std::endl;
       send_websockets_message(host, port, path, text);
+      return EXIT_SUCCESS;
 }
 
 void send_websockets_message(std::string host, std::string port,

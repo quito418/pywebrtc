@@ -36,7 +36,7 @@ int main(int argc, char** argv)
                 "    websocket \"Hello, world!\"\n";
             return EXIT_FAILURE;
         }
-        auto const host = "ccr-frontend.jemmons.us";
+        auto const host = "ccr-frontend-0.jemmons.us";
         auto const port = "443";
         auto const path = "echo";
         auto const text = argv[1];
