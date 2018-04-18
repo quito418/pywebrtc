@@ -186,6 +186,7 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_facto
 webrtc::PeerConnectionInterface::RTCConfiguration configuration;
 Connection connection;
 rtc::PhysicalSocketServer socket_server;
+rtc::scoped_refptr<webrtc::DataChannelInterface> channel;
 
 //typedef websocket::stream<<ssl::stream<tcp::socket>> ssl_stream;
 
@@ -231,7 +232,7 @@ void createPeerConnection() {
     	peer_connection_factory = nullptr;
     	std::cout << "Error on CreatePeerConnection." << std::endl;
     	return;
-  	}
+  }
 
 }
 
@@ -248,8 +249,8 @@ void callerOffer() {
 	connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
 	connection.data_channel->RegisterObserver(&connection.dco);
 
-  	connection.sdp_type = "offer"; 
-  	connection.peer_connection->CreateOffer(connection.csdo, nullptr);
+  connection.sdp_type = "offer"; 
+  connection.peer_connection->CreateOffer(connection.csdo, nullptr);
 }
 
 
@@ -417,6 +418,7 @@ int main(int argc, char **argv) {
 	
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
  	createPeerConnection();
+  initializeDataChannel();
 
 
 	thread.reset();
