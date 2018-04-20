@@ -1,5 +1,7 @@
 import pywebrtc 
 
-test = pywebrtc.Connection('hello')
+conn = pywebrtc.Connection('hello')
 
-test.say_message()
+conn.say_message()
+
+print(conn.get_sdp())

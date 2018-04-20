@@ -8,8 +8,13 @@ class Connection:
         self.message = message
 
 
-    def say_message(self):
+    def get_sdp(self):
 
+        return self.conn.getSDP()
+
+
+    def say_message(self):
+    
         self.conn.start()
         self.conn.stop()
         print(self.message)

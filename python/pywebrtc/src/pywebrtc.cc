@@ -5,7 +5,9 @@ extern "C" {
     typedef struct {
 
         PyObject_HEAD
-
+        
+        // CXXWebRTCObject my_object;
+        
     } PyWebRTCConnection;
 
     static PyObject*
@@ -110,6 +112,27 @@ extern "C" {
     }
 
     static PyObject*
+    PyWebRTCConnection_getSDP(PyWebRTCConnection *self){
+
+        // uint64_t counter_val;
+        // try {
+        //     counter_val = self->counter->getval();
+        // }
+        // catch(const std::exception& e) {
+        //     PyErr_SetString(PyExc_ValueError, e.what());
+        //     return 0;
+        // }
+
+        // std::string sdp_response = self->my_object.get_sdp();
+        // PyObject *sdp = PyUnicode_FromString(sdp_response.c_str());
+       
+        PyObject *sdp = PyUnicode_FromString("you guys will put the SDP info here...");
+        
+        return sdp;
+    }
+
+    
+    static PyObject*
     PyWebRTCConnection_getval(PyWebRTCConnection *self){
 
         // uint64_t counter_val;
@@ -139,6 +162,9 @@ extern "C" {
         },
         {"getval", (PyCFunction)PyWebRTCConnection_getval, METH_VARARGS,
               "Returns current value of the counter."
+        },
+        {"getSDP", (PyCFunction)PyWebRTCConnection_getSDP, METH_VARARGS,
+              "Returen the SDP."
         },
         {NULL, NULL, METH_VARARGS, ""}  /* Sentinel */
     };
