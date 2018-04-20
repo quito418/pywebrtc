@@ -19,8 +19,8 @@ def get_version(header_filepath):
     
 VERSION = get_version('../src/common.hh')
 
-module = Extension('pywebrtc',
-                   sources=['pywebrtc/pywebrtc.cc'],
+module = Extension('pywebrtc._ext.pywebrtc',
+                   sources=['pywebrtc/src/pywebrtc.cc'],
                    define_macros=[],
                    include_dirs=['pywebrtc'],
                    library_dirs=[],
