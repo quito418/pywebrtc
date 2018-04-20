@@ -322,6 +322,7 @@ void setICEInformation(const std::string& parameter) {
     connection.peer_connection->AddIceCandidate(ice);
   }
 }
+#endif
 void disconnectFromCurrentPeer() {
   // TODO: Send message to other peer to disconnect
   connection.peer_connection->Close();
@@ -331,7 +332,6 @@ void disconnectFromCurrentPeer() {
 
   socketserver_thread->Quit();
 }
-#endif
 
 
 /*void runWebSocket(auto const host, auto const port, auto const path) {
