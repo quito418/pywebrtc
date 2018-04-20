@@ -181,14 +181,12 @@ class Connection {
 };
 
 // Variables needed for the implementation
-std::unique_ptr<rtc::Thread> thread;
+std::unique_ptr<rtc::Thread> socketserver_thread;
 rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory;
 webrtc::PeerConnectionInterface::RTCConfiguration configuration;
 Connection connection;
 rtc::PhysicalSocketServer socket_server;
 rtc::scoped_refptr<webrtc::DataChannelInterface> channel;
-
-//typedef websocket::stream<<ssl::stream<tcp::socket>> ssl_stream;
 
 class CustomRunnable : public rtc::Runnable {
   public:
@@ -236,6 +234,7 @@ void createPeerConnection() {
 
 }
 
+#if 0
 /** 
 	callerOffer: establishes the data channel to communicate and
 				 then creates an offer to the callee
@@ -323,7 +322,6 @@ void setICEInformation(const std::string& parameter) {
     connection.peer_connection->AddIceCandidate(ice);
   }
 }
-
 void disconnectFromCurrentPeer() {
   // TODO: Send message to other peer to disconnect
   connection.peer_connection->Close();
@@ -331,8 +329,9 @@ void disconnectFromCurrentPeer() {
   connection.data_channel = nullptr;
   peer_connection_factory = nullptr;
 
-  thread->Quit();
+  socketserver_thread->Quit();
 }
+#endif
 
 
 /*void runWebSocket(auto const host, auto const port, auto const path) {
@@ -384,44 +383,106 @@ void disconnectFromCurrentPeer() {
 
 }*/
 
+
+
+std::string kind_message(std::string role, std::string connection_id) {
+    picojson::object message;
+    message.insert(std::make_pair("type", picojson::value("kind")));
+    message.insert(std::make_pair("kind", picojson::value(role)));
+    message.insert(std::make_pair("connection_id", picojson::value(connection_id)));
+    return picojson::value(message).serialize();
+}
+
 int main(int argc, char **argv) {
 
   // Set which role we are
-  if(argc != 2)
+  if(argc != 3)
   {
     std::cerr <<
-      "Usage: main <role>\n" <<
+      "Usage: pywebrtc <role> <connection_id> \n" <<
       "Example:\n" <<
-      "    main server \n main client \n";
+      "    main server 123 \n main client 123\n";
     return EXIT_FAILURE;
   };
 
-  auto const role = argv[1];
+  std::cout << "Begin..." << std::endl;
+  std::string const role = argv[1];
+  std::string const connection_id = argv[2];
 
-  thread.reset(new rtc::Thread(&socket_server));
+  /*
+  socketserver_thread.reset(new rtc::Thread(&socket_server));
 
-  // Initialize ssl and thread manager
+  // Initialize ssl and socketserver_thread manager
   rtc::InitializeSSL();
   rtc::InitRandom(rtc::Time());
 
+
+  std::cout << "Create PeerConnectionFactory..." << std::endl;
+
   // 1. Create a PeerConnectionFactoryInterface
   CustomRunnable runnable;
-  thread->Start(&runnable);
-
+  socketserver_thread->Start(&runnable);
+  */
+  std::cout << "Create websocket connection..." << std::endl;
 
   // 2. Set up web socket connection to signaling server
   auto const host = "ccr-frontend-0.jemmons.us";
   auto const port = "443";
   auto const path = "ccr";
+  // All websockets code TODO: move this into a function without implicit deletion errors?
 
+  // BEGIN send_kind_message
+  boost::system::error_code ec;
+  // The io_context is required for all I/O
+  std::cout << "ioc:" << std::endl;
+  boost::asio::io_context ioc; 
+  // The SSL context is required, and holds certificates
+  std::cout << "ioc:" << std::endl;
+  ssl::context ctx{ssl::context::sslv23_client}; 
+  // This holds the root certificate used for verification
+  std::cout << "ioc:" << std::endl;
+  load_root_certificates(ctx, ec); 
+  // These objects perform our I/O
+  std::cout << "ioc:" << std::endl;
+  tcp::resolver resolver{ioc};
+  std::cout << "ioc:" << std::endl;
+  websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
+  // Look up the domain name
+  std::cout << "Domain resolved: " << host << ":" << port << std::endl;
+  auto const results = resolver.resolve(host, port);
+// Make the connection on the IP address we get from a lookup
+  boost::asio::connect(ws.next_layer().next_layer(), results.begin(), results.end()); 
+  // Perform the SSL handshake
+  ws.next_layer().handshake(ssl::stream_base::client); 
+  // Perform the websocket handshake
+  ws.handshake(host, path); 
+  // Send the message
+  std::string kind_msg = kind_message(role, connection_id);
+  ws.write(boost::asio::buffer(kind_msg));
+  // END send_kind_message
+
+  std::cout << "Kind message sent: "<< kind_msg << std::endl;
+  
+
+  // This buffer will hold the incoming message
+  boost::beast::multi_buffer b;
+  // Read a message into our buffer
+  ws.read(b);
+
+  // The buffers() function helps print a ConstBufferSequence
+  std::cout << boost::beast::buffers(b.data()) << std::endl;
   //runWebSocket(host, port, path);
 
+  std::cout << "Create peer connection..." << std::endl;
   // 2. Create a PeerConnection object with configuration and PeerConnectionObserver
-  createPeerConnection();
+  //createPeerConnection();
 
 
-  thread.reset();
+  std::cout << "Cleanup..." << std::endl;
+  /*
+  socketserver_thread.reset();
   rtc::CleanupSSL();
+  */
 
   return 0;
 }
