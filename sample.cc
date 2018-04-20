@@ -9,18 +9,16 @@
 //#define WEBRTC_ANDROID 1
 //#define WEBRTC_IOS 1
 //#define WEBRTC_LINUX 1
-#define WEBRTC_MAC 1
-#define WEBRTC_POSIX 1
 //#define WEBRTC_WIN 1
 
 // WebRTC関連のヘッダ
 #include <webrtc/api/audio_codecs/builtin_audio_decoder_factory.h>
 #include <webrtc/api/audio_codecs/builtin_audio_encoder_factory.h>
 #include <webrtc/api/peerconnectioninterface.h>
-#include <webrtc/rtc_base/flags.h>
-#include <webrtc/rtc_base/physicalsocketserver.h>
-#include <webrtc/rtc_base/ssladapter.h>
-#include <webrtc/rtc_base/thread.h>
+#include <webrtc/base/flags.h>
+#include <webrtc/base/physicalsocketserver.h>
+#include <webrtc/base/ssladapter.h>
+#include <webrtc/base/thread.h>
 
 // picojsonはコピペ用データ構造を作るために使う
 #include "picojson/picojson.h"
