@@ -23,7 +23,7 @@ target_link_libraries(websocket ${OPENSSL_LIBRARIES})
 # target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
 
 # add source files
-set(SOURCE_FILES main.cc)
+set(SOURCE_FILES sample.cc)
 
 # create pywebrtc executable
 add_executable(pywebrtc ${SOURCE_FILES})

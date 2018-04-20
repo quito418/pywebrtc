@@ -418,7 +418,6 @@ int main(int argc, char **argv) {
 	
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
  	createPeerConnection();
-  initializeDataChannel();
 
 
 	thread.reset();
