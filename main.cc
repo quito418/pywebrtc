@@ -55,7 +55,6 @@ class Connection {
       desc->ToString(&sdp);
       information.insert(std::make_pair("sdp", picojson::value(sdp)));
       information.insert(std::make_pair("type", picojson::value(sdp_type)));
-
       // TODO: Figure out how to send to signaling server
     }
 
@@ -334,56 +333,6 @@ void disconnectFromCurrentPeer() {
   thread->Quit();
 }
 
-
-/*void runWebSocket(auto const host, auto const port, auto const path) {
-	try
-	{
-		// The io_context is required for all I/O
-		boost::asio::io_context ioc;
-
-		// The SSL context is required, and holds certificates
-		ssl::context ctx{ssl::context::sslv23_client};
-
-		// This holds the root certificate used for verification
-		load_root_certificates(ctx);
-
-		// These objects perform our I/O
-		tcp::resolver resolver{ioc};
-		ssl_stream ws(ioc, ctx);
-
-		// Look up the domain name
-		auto const results = resolver.resolve(host, port);
-
-		// Make the connection on the IP address we get from a lookup
-		boost::asio::connect(ws.next_layer().next_layer(), results.begin(), results.end());
-
-		// Perform the SSL handshake
-		ws.next_layer().handshake(ssl::stream_base::client);
-
-		// Perform the websocket handshake
-		ws.handshake(host, path);
-
-
-		// This buffer will hold the incoming message
-		boost::beast::multi_buffer b;
-
-		// TODO: Edit this so that we loop
-
-		// Read a message into our buffer
-		ws.read(b);
-
-		// Close the WebSocket connection
-		ws.close(websocket::close_code::normal);
-
-	}
-	catch(std::exception const& e)
-	{
-		std::cerr << "Error: " << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
-
-}*/
-
 int main(int argc, char **argv) {
 
   // Set which role we are
@@ -398,11 +347,11 @@ int main(int argc, char **argv) {
 
   auto const role = argv[1];
 
+
   thread.reset(new rtc::Thread(&socket_server));
 
   // Initialize ssl and thread manager
   rtc::InitializeSSL();
-  rtc::InitRandom(rtc::Time());
 
   // 1. Create a PeerConnectionFactoryInterface
   CustomRunnable runnable;
@@ -417,17 +366,11 @@ int main(int argc, char **argv) {
   //runWebSocket(host, port, path);
 
 	
-	// 2. Set up web socket connection to signaling server
-	auto const host = "ccr-frontend-0.jemmons.us";
-	auto const port = "443";
-	auto const path = "ccr";
-	
-	//runWebSocket(host, port, path);
-	
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
- 	createPeerConnection();
+  createPeerConnection();
+  //callerOffer();
 
-
+  disconnectFromCurrentPeer();
   thread.reset();
   rtc::CleanupSSL();
 

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.3)
 project(pywebrtc)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 # get LibWebRTC
 find_package(LibWebRTC REQUIRED)
 include(${LIBWEBRTC_USE_FILE})
