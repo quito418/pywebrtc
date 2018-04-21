@@ -1,3 +1,6 @@
+#define WEBRTC_LINUX 1
+#define WEBRTC_POSIX 1
+
 #include <string>
 
 #include <webrtc/api/mediastreaminterface.h>

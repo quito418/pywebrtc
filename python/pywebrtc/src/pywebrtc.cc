@@ -1,12 +1,14 @@
 #include <Python.h>
 
+#include <string>
+#include "libwebrtc_hl.hh"
+
 extern "C" {
 
     typedef struct {
 
         PyObject_HEAD
-        
-        // CXXWebRTCObject my_object;
+	LibWebRTC::WebRTCConnection *connection;
         
     } PyWebRTCConnection;
 
@@ -20,19 +22,23 @@ extern "C" {
             PyErr_SetString(PyExc_ValueError, "Could not alloc a new PyWebRTCConnection.");
             return 0;
         }
-
+	
         return (PyObject*) self;
     }
 
     static void
     PyWebRTCConnection_dealloc(PyWebRTCConnection* self) {
 
+        //delete self->connection;
         Py_TYPE(self)->tp_free((PyObject*)self);
     }
     
     static int
     PyWebRTCConnection_init(PyWebRTCConnection *self, PyObject *args, PyObject *kwargs) {
 
+      
+        LibWebRTC::WebRTCConnection my_connection{"server"};
+      
         // char *counter_name = NULL;
 
         // static char *kwlist[] = { "counter_name", NULL };
