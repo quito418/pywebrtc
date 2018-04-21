@@ -1,7 +1,17 @@
 #pragma once
 
-#include <webrtc/api/mediastreaminterface.h>
-#include <webrtc/api/peerconnectioninterface.h>
-#include <webrtc/base/ssladapter.h>
-#include <webrtc/base/thread.h>
-#include <webrtc/base/physicalsocketserver.h>
+namespace LibWebRTC {
+
+  class WebRTCConnection {
+  private:
+    
+  public:
+    WebRTCConnection(void);
+    ~WebRTCConnection(void);
+    
+    void run(int argc, char* argv[]);
+  
+  };
+  
+
+}
