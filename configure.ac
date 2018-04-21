@@ -28,6 +28,7 @@ AC_PROG_CXX
 AM_PROG_LIBTOOL
 
 # Checks for libraries.
+PKG_CHECK_MODULES([LIBWEBRTC], [LibWebRTC])
 
 # Checks for header files.
 

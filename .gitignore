@@ -1,11 +1,13 @@
-
-
 out/
 *.swp
 python/build
 python/dist
 python/pywebrtc.egg-info/
 venv
+
+src/libwebrtc_hl.la
+src/libwebrtc_hl.lo
+src/.libs
 
 # other
 *.a
