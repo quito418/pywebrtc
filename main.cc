@@ -3,6 +3,7 @@
 #include <thread>
 #include <cstdlib>
 #include <cstddef>
+#include <mutex>
 
 //#define WEBRTC_ANDROID 1
 //#define WEBRTC_IOS 1
@@ -184,6 +185,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration configuration;
 Connection connection;
 rtc::PhysicalSocketServer socket_server;
 rtc::scoped_refptr<webrtc::DataChannelInterface> channel;
+std::mutex peer_connection_factory_mutex;
 
 //typedef websocket::stream<<ssl::stream<tcp::socket>> ssl_stream;
 
@@ -191,6 +193,7 @@ class CustomRunnable : public rtc::Runnable {
   public:
     void Run(rtc::Thread* subthread) override {
       peer_connection_factory = webrtc::CreatePeerConnectionFactory();
+      peer_connection_factory_mutex.unlock();
       if (peer_connection_factory.get() == nullptr) {
         std::cout << "Error on CreatePeerConnectionFactory." << std::endl;
         return;
@@ -359,6 +362,7 @@ int main(int argc, char **argv) {
   rtc::InitializeSSL();
 
   // 1. Create a PeerConnectionFactoryInterface
+  peer_connection_factory_mutex.lock();
   CustomRunnable runnable;
   thread->Start(&runnable);
   
@@ -373,6 +377,9 @@ int main(int argc, char **argv) {
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
   //createPeerConnection();
   //callerOffer();
+  while(!peer_connection_factory_mutex.try_lock()) {}
+  peer_connection_factory_mutex.unlock();
+
   cmd_sdp1();
 
   disconnectFromCurrentPeer();
