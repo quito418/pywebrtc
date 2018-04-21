@@ -25,7 +25,7 @@ target_link_libraries(websocket ${OPENSSL_LIBRARIES})
 # target_link_libraries(pywebrtc ${LIBWEBRTC_LIBRARIES})
 
 # add source files
-set(SOURCE_FILES sample.cc)
+set(SOURCE_FILES main.cc)
 
 # create pywebrtc executable
 add_executable(pywebrtc ${SOURCE_FILES})
@@ -41,4 +41,12 @@ add_executable(websocket-offer websocket_offer.cpp)
 # link websocket libraries
 target_link_libraries(websocket-offer ${Boost_LIBRARIES})
 target_link_libraries(websocket-offer ${OPENSSL_LIBRARIES})
+
+# create sample executable
+add_executable(sample sample.cc)
+
+# link pywebrtc libraries
+target_link_libraries(sample ${Boost_LIBRARIES})
+target_link_libraries(sample ${OPENSSL_LIBRARIES})
+target_link_libraries(sample ${LIBWEBRTC_LIBRARIES})
 
