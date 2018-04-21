@@ -51,7 +51,7 @@ int main(int argc, char** argv)
       return EXIT_SUCCESS;
 }
 
-public void send_websockets_message(std::string host, std::string port,
+void send_websockets_message(std::string host, std::string port,
     std::string path, std::string text) {
     try
     {
