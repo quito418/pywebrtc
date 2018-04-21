@@ -5,6 +5,7 @@ python/dist
 python/pywebrtc.egg-info/
 venv
 
+src/test_webrtc
 src/libwebrtc_hl.la
 src/libwebrtc_hl.lo
 src/.libs

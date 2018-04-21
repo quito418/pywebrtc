@@ -4,10 +4,11 @@
 
 int main(int argc, char* argv[]) {
  
-  std::cout << "hello world" << std::endl;
+  std::cout << "constructing connection class" << std::endl;
+  LibWebRTC::WebRTCConnection conn("server");
 
-  auto conn = LibWebRTC::WebRTCConnection();
-  conn.run(argc, argv);
+  std::cout << "getting offer" << std::endl;
+  std::cerr <<  conn.get_offer() << std::endl;
 
   return 0;
 }
