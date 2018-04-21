@@ -4,28 +4,25 @@
 #include <cstdlib>
 #include <cstddef>
 
+//#define WEBRTC_ANDROID 1
+//#define WEBRTC_IOS 1
+#define WEBRTC_LINUX 1
+//#define WEBRTC_MAC 1
+#define WEBRTC_POSIX 1
+//#define WEBRTC_WIN 1
+
 // WebRTC Dependencies
 #include <webrtc/api/mediastreaminterface.h>
 #include <webrtc/api/peerconnectioninterface.h>
 #include <webrtc/base/ssladapter.h>
 #include <webrtc/base/thread.h>
+#include <webrtc/base/flags.h>
 #include <webrtc/base/physicalsocketserver.h>
 
 // JSON Parser Dependencies
 #include "picojson/picojson.h"
 
-#include "common/root_certificates.hpp"
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/beast/websocket/ssl.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
-
-using tcp = boost::asio::ip::tcp;
-namespace ssl = boost::asio::ssl;
-namespace websocket = boost::beast::websocket;
-
+#include <unistd.h>
 // Refer to the API at: https://webrtc.googlesource.com/src/+/master/api/peerconnectioninterface.h
 
 // Implementation for peer to peer connection observers (which manage callbacks)
@@ -56,6 +53,7 @@ class Connection {
       information.insert(std::make_pair("sdp", picojson::value(sdp)));
       information.insert(std::make_pair("type", picojson::value(sdp_type)));
       // TODO: Figure out how to send to signaling server
+	  std::cout << sdp << std::endl;
     }
 
     void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
@@ -323,6 +321,24 @@ void setICEInformation(const std::string& parameter) {
   }
 }
 
+void cmd_sdp1() {
+  connection.peer_connection = peer_connection_factory->CreatePeerConnection(configuration, nullptr, nullptr, &connection.pco);
+
+  webrtc::DataChannelInit config;
+  // DataChannelの設定
+
+  connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
+  connection.data_channel->RegisterObserver(&connection.dco);
+
+  if (connection.peer_connection.get() == nullptr) {
+    peer_connection_factory = nullptr;
+    std::cout << "Error on CreatePeerConnection." << std::endl;
+    return;
+  }
+  connection.sdp_type = "Offer"; // 表示用の文字列、webrtcの動作には関係ない
+  connection.peer_connection->CreateOffer(connection.csdo, nullptr);
+}
+
 void disconnectFromCurrentPeer() {
   // TODO: Send message to other peer to disconnect
   connection.peer_connection->Close();
@@ -334,19 +350,8 @@ void disconnectFromCurrentPeer() {
 }
 
 int main(int argc, char **argv) {
-
-  // Set which role we are
-  if(argc != 2)
-  {
-    std::cerr <<
-      "Usage: main <role>\n" <<
-      "Example:\n" <<
-      "    main server \n main client \n";
-    return EXIT_FAILURE;
-  };
-
-  auto const role = argv[1];
-
+  rtc::FlagList::SetFlagsFromCommandLine(&argc, argv, true);
+  rtc::FlagList::Print(nullptr, false);
 
   thread.reset(new rtc::Thread(&socket_server));
 
@@ -356,6 +361,7 @@ int main(int argc, char **argv) {
   // 1. Create a PeerConnectionFactoryInterface
   CustomRunnable runnable;
   thread->Start(&runnable);
+  
 
 
   // 2. Set up web socket connection to signaling server
@@ -363,12 +369,11 @@ int main(int argc, char **argv) {
   auto const port = "443";
   auto const path = "ccr";
 
-  //runWebSocket(host, port, path);
 
-	
 	// 2. Create a PeerConnection object with configuration and PeerConnectionObserver
-  createPeerConnection();
+  //createPeerConnection();
   //callerOffer();
+  cmd_sdp1();
 
   disconnectFromCurrentPeer();
   thread.reset();
