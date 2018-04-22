@@ -6,9 +6,9 @@ lib_LTLIBRARIES = libwebrtc_hl.la
 libwebrtc_hl_la_SOURCES = libwebrtc_hl.cc libwebrtc_hl.hh common.hh picojson.h
 libwebrtc_hl_la_LDFLAGS = -version-info 0:0:0 
 
-bin_PROGRAMS = test_webrtc
-test_webrtc_SOURCES = test_webrtc.cc 
-test_webrtc_LDADD = libwebrtc_hl.la
+#bin_PROGRAMS = test_webrtc
+#test_webrtc_SOURCES = test_webrtc.cc 
+#test_webrtc_LDADD = libwebrtc_hl.la
 
 #noinst_LIBRARIES =  libnn.a
 #libnn_a_SOURCES = nn.hh nn.cc \

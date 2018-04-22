@@ -12,7 +12,7 @@ AC_CONFIG_MACRO_DIRS([m4])
 m4_include(m4/python.m4)
 
 # Add picky CXXFLAGS
-CXX14_FLAGS="-std=c++14"
+CXX14_FLAGS="-std=c++14 -fstack-protector-all"
 PICKY_CXXFLAGS="-Wall -Wextra -Wno-non-virtual-dtor"
 AC_SUBST([CXX14_FLAGS])
 AC_SUBST([PICKY_CXXFLAGS])

@@ -1,6 +1,3 @@
-#define WEBRTC_LINUX 1
-#define WEBRTC_POSIX 1
-
 #include <string>
 
 #include <webrtc/api/mediastreaminterface.h>
@@ -14,39 +11,41 @@
 #include "connection.hh"
 
 LibWebRTC::WebRTCConnection::WebRTCConnection(std::string kind) :
-  connection(),
-  runnable(peer_connection_factory, peer_connection_factory_mutex)
+  //connection(),
+runnable(peer_connection_factory, peer_connection_factory_mutex)
+  //socket_server()
 {
-
+  
   //rtc::FlagList::SetFlagsFromCommandLine(&zero, nullptr, true);
   //rtc::FlagList::Print(nullptr, false);
+  //thread.reset(new rtc::Thread(&socket_server));
 
-  thread.reset(new rtc::Thread(&socket_server));
+  // // Initialize ssl and thread manager
+  // rtc::InitializeSSL();
 
-  // Initialize ssl and thread manager
-  rtc::InitializeSSL();
-
-  // 1. Create a PeerConnectionFactoryInterface
-  peer_connection_factory_mutex.lock();
-  thread->Start(&runnable);
+  // // 1. Create a PeerConnectionFactoryInterface
+  // peer_connection_factory_mutex.lock();
+  // thread->Start(&runnable);
   
-  // 2. Create a PeerConnection object with configuration and PeerConnectionObserver
-  //callerOffer();
-  while(!peer_connection_factory_mutex.try_lock()) {}
-  peer_connection_factory_mutex.unlock();
+  // // 2. Create a PeerConnection object with configuration and PeerConnectionObserver
+  // //callerOffer();
+  // while(!peer_connection_factory_mutex.try_lock()) {}
+  // peer_connection_factory_mutex.unlock();
 
-  createPeerConnection();
+  // createPeerConnection();
   
 }
 
 LibWebRTC::WebRTCConnection::~WebRTCConnection(void) {
 
-  disconnectFromCurrentPeer();
   thread.reset();
+  /*
+  disconnectFromCurrentPeer();
   rtc::CleanupSSL();
-
+  */
 }
 
+/*
 void LibWebRTC::WebRTCConnection::createPeerConnection() {
   //connection = new Connection(ws);
   webrtc::PeerConnectionInterface::RTCConfiguration config;
@@ -90,9 +89,13 @@ void LibWebRTC::WebRTCConnection::disconnectFromCurrentPeer(void) {
   thread->Quit();
 
 }
+*/
 
 std::string LibWebRTC::WebRTCConnection::get_offer(void) {
 
+  return "hello there!";
+
+  /*
   webrtc::DataChannelInit config;
   connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
   connection.data_channel->RegisterObserver(&connection.dco);
@@ -103,4 +106,5 @@ std::string LibWebRTC::WebRTCConnection::get_offer(void) {
   std::string offer = connection.get_sdp();
   
   return offer;
+  */
 }

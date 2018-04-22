@@ -30,6 +30,9 @@ module = Extension('pywebrtc._ext.pywebrtc',
                                        '-D', 'PYWEBRTC_VERSION={}'.format(VERSION)],
                    extra_link_args=['-L../src/.libs',
                                     '-lwebrtc_hl']
+                   # extra_link_args=['-L../src/.libs',
+                   #                  '-Wl,-Bstatic', '-lwebrtc_hl',
+                   #                  '-Wl,-Bdynamic', '-lpthread']
                                     
                    )
 

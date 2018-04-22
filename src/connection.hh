@@ -22,6 +22,7 @@ public:
   
   CustomRunnable(rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &peer_connection_factory,
 		 std::mutex &peer_connection_factory_mutex) :
+    rtc::Runnable(),
     peer_connection_factory_(peer_connection_factory),
     peer_connection_factory_mutex_(peer_connection_factory_mutex)
   {}

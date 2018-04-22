@@ -35,9 +35,8 @@ extern "C" {
     
     static int
     PyWebRTCConnection_init(PyWebRTCConnection *self, PyObject *args, PyObject *kwargs) {
-
       
-        LibWebRTC::WebRTCConnection my_connection{"server"};
+        self->connection = new LibWebRTC::WebRTCConnection{"server"};
       
         // char *counter_name = NULL;
 
@@ -132,7 +131,7 @@ extern "C" {
         // std::string sdp_response = self->my_object.get_sdp();
         // PyObject *sdp = PyUnicode_FromString(sdp_response.c_str());
        
-        PyObject *sdp = PyUnicode_FromString("you guys will put the SDP info here...");
+        PyObject *sdp = PyUnicode_FromString(self->connection->get_offer().c_str());
         
         return sdp;
     }
