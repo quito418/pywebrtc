@@ -7,7 +7,7 @@ check-local:
 
 clean-local:
 	python3 setup.py clean --all
-	rm -rf ./pywebrtc/_ext
+	rm -rf ./build ./pywebrtc/_ext ./pywebrtc.egg-info
 
 install-data-local:
 
