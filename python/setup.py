@@ -9,15 +9,16 @@ def get_version(header_filepath):
         headerfile = f.read().strip()
 
         try:
-            version_found = re.search('\s*\#define\s*PYWEBRTC_VERSION\s*(\"(\d+\.)*\d+"?)[ \t]*$',
+            version_found = re.search('\s*\#define\s*VERSION\s*(\"(\d+\.)*\d+"?)[ \t]*$',
                                       headerfile, re.MULTILINE).group(1)
             return version_found
         except:
-            raise Exception("Could not file definition of 'PYWEBRTC_VERSION' in header file: {}".format(header_filepath))
+            raise Exception("Could not file definition of" +
+                            "'PYWEBRTC_VERSION' in header file: {}".format(header_filepath))
 
 
     
-VERSION = get_version('../src/common.hh')
+VERSION = get_version('../config.h')
 
 module = Extension('pywebrtc._ext.pywebrtc',
                    sources=['pywebrtc/src/pywebrtc.cc'],
@@ -28,8 +29,9 @@ module = Extension('pywebrtc._ext.pywebrtc',
                    extra_compile_args=['-I../src', '-std=c++14', '-Wall', '-Wextra',
                                        '-D', 'PYWEBRTC_VERSION={}'.format(VERSION)],
                    extra_link_args=['-L../src/.libs',
-                                    '-lwebrtc_hl',
-                                    '-lwebrtc']
+                                    '-Wl,-Bstatic', '-lwebrtc',
+                                    '-Wl,-Bdynamic', '-lwebrtc_hl',
+                                    '-Wl,-Bdynamic', '-lpthread']
                    )
 
 setup(
