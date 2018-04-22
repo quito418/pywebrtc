@@ -14,31 +14,6 @@
 #define WEBRTC_LINUX 1
 #define WEBRTC_POSIX 1
 
-class CustomRunnable : public rtc::Runnable {
-private:
-  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>  &peer_connection_factory_;
-  std::mutex &peer_connection_factory_mutex_; 
-public:
-  
-  CustomRunnable(rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &peer_connection_factory,
-		 std::mutex &peer_connection_factory_mutex) :
-    rtc::Runnable(),
-    peer_connection_factory_(peer_connection_factory),
-    peer_connection_factory_mutex_(peer_connection_factory_mutex)
-  {}
-    
-  void Run(rtc::Thread* subthread) override {
-      peer_connection_factory_ = webrtc::CreatePeerConnectionFactory();
-      peer_connection_factory_mutex_.unlock();
-      if (peer_connection_factory_.get() == nullptr) {
-        std::cout << "Error on CreatePeerConnectionFactory." << std::endl;
-        return;
-      }
-
-      subthread->Run();
-    }
-};
-
 class Connection {
 private:
   std::string sdp_;

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 
 #include <webrtc/api/mediastreaminterface.h>
@@ -9,23 +10,30 @@
 
 #include "libwebrtc_hl.hh"
 #include "connection.hh"
+#include "runnable.hh"
+
+extern const size_t WebRTCConnectionSize = sizeof(LibWebRTC::WebRTCConnection);
 
 LibWebRTC::WebRTCConnection::WebRTCConnection(std::string kind) :
-  //connection(),
-runnable(peer_connection_factory, peer_connection_factory_mutex)
-  //socket_server()
+  connection(),
+  peer_connection_factory_mutex(),
+  runnable(&peer_connection_factory_mutex),
+  //runnable(peer_connection_factory, peer_connection_factory_mutex),
+  configuration(),
+  channel(),
+  socket_server()
 {
   
   //rtc::FlagList::SetFlagsFromCommandLine(&zero, nullptr, true);
   //rtc::FlagList::Print(nullptr, false);
-  //thread.reset(new rtc::Thread(&socket_server));
+  thread.reset(new rtc::Thread(&socket_server));
 
   // // Initialize ssl and thread manager
-  // rtc::InitializeSSL();
+  rtc::InitializeSSL();
 
   // // 1. Create a PeerConnectionFactoryInterface
-  // peer_connection_factory_mutex.lock();
-  // thread->Start(&runnable);
+  peer_connection_factory_mutex.lock();
+  thread->Start(&runnable);
   
   // // 2. Create a PeerConnection object with configuration and PeerConnectionObserver
   // //callerOffer();
@@ -38,15 +46,16 @@ runnable(peer_connection_factory, peer_connection_factory_mutex)
 
 LibWebRTC::WebRTCConnection::~WebRTCConnection(void) {
 
-  thread.reset();
+  //thread.reset();
   /*
   disconnectFromCurrentPeer();
-  rtc::CleanupSSL();
   */
+  rtc::CleanupSSL();
 }
 
-/*
 void LibWebRTC::WebRTCConnection::createPeerConnection() {
+
+  /*
   //connection = new Connection(ws);
   webrtc::PeerConnectionInterface::RTCConfiguration config;
 
@@ -75,11 +84,13 @@ void LibWebRTC::WebRTCConnection::createPeerConnection() {
     std::cout << "Error on CreatePeerConnection." << std::endl;
     return;
   }
+  */
 
 }
 
 void LibWebRTC::WebRTCConnection::disconnectFromCurrentPeer(void) {
 
+  /*
   // TODO: Send message to other peer to disconnect
   connection.peer_connection->Close();
   connection.peer_connection = nullptr;
@@ -87,13 +98,12 @@ void LibWebRTC::WebRTCConnection::disconnectFromCurrentPeer(void) {
   peer_connection_factory = nullptr;
 
   thread->Quit();
-
+  */
 }
-*/
 
 std::string LibWebRTC::WebRTCConnection::get_offer(void) {
 
-  return "hello there!";
+  return std::string("hello there!");
 
   /*
   webrtc::DataChannelInit config;
@@ -107,4 +117,5 @@ std::string LibWebRTC::WebRTCConnection::get_offer(void) {
   
   return offer;
   */
+
 }
