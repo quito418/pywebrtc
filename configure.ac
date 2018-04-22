@@ -12,13 +12,13 @@ AC_CONFIG_MACRO_DIRS([m4])
 m4_include(m4/python.m4)
 
 # Add picky CXXFLAGS
-CXX14_FLAGS="-std=c++14 -fstack-protector-all"
+CXX14_FLAGS="-std=c++14 -fstack-protector-all -fabi-compat-version=2"
 PICKY_CXXFLAGS="-Wall -Wextra -Wno-non-virtual-dtor"
 AC_SUBST([CXX14_FLAGS])
 AC_SUBST([PICKY_CXXFLAGS])
 
 # add flags for python wrapper compilation
-PYWRAPPER_EXTRA_CFLAGS="-std=c++14 -Wall -Wextra -Weffc++"
+PYWRAPPER_EXTRA_CFLAGS="-std=c++14 -Wall -Wextra -Weffc++ -fabi-compat-version=2"
 PYWRAPPER_EXTRA_LDFLAGS=""
 AC_SUBST([PYWRAPPER_EXTRA_CFLAGS])
 AC_SUBST([PYWRAPPER_EXTRA_LDFLAGS])

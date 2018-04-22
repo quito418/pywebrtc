@@ -17,45 +17,44 @@ extern const size_t WebRTCConnectionSize = sizeof(LibWebRTC::WebRTCConnection);
 LibWebRTC::WebRTCConnection::WebRTCConnection(std::string kind) :
   connection(),
   peer_connection_factory_mutex(),
-  runnable(&peer_connection_factory_mutex),
-  //runnable(peer_connection_factory, peer_connection_factory_mutex),
+  peer_connection_factory(),
+  runnable(&peer_connection_factory_mutex, &peer_connection_factory),
   configuration(),
   channel(),
   socket_server()
 {
-  
+
+  //int zero = 0;
   //rtc::FlagList::SetFlagsFromCommandLine(&zero, nullptr, true);
   //rtc::FlagList::Print(nullptr, false);
   thread.reset(new rtc::Thread(&socket_server));
 
-  // // Initialize ssl and thread manager
+  // Initialize ssl and thread manager
   rtc::InitializeSSL();
-
-  // // 1. Create a PeerConnectionFactoryInterface
+  
+  // 1. Create a PeerConnectionFactoryInterface
   peer_connection_factory_mutex.lock();
   thread->Start(&runnable);
   
-  // // 2. Create a PeerConnection object with configuration and PeerConnectionObserver
-  // //callerOffer();
-  // while(!peer_connection_factory_mutex.try_lock()) {}
-  // peer_connection_factory_mutex.unlock();
+  // 2. Create a PeerConnection object with configuration and PeerConnectionObserver
+  //callerOffer();
+  while(!peer_connection_factory_mutex.try_lock()) {}
+  peer_connection_factory_mutex.unlock();
 
-  // createPeerConnection();
+  createPeerConnection();
   
 }
 
 LibWebRTC::WebRTCConnection::~WebRTCConnection(void) {
 
+  // TODO we need to clean these objects up...
   //thread.reset();
-  /*
-  disconnectFromCurrentPeer();
-  */
+  //disconnectFromCurrentPeer();
   rtc::CleanupSSL();
 }
 
 void LibWebRTC::WebRTCConnection::createPeerConnection() {
 
-  /*
   //connection = new Connection(ws);
   webrtc::PeerConnectionInterface::RTCConfiguration config;
 
@@ -76,36 +75,32 @@ void LibWebRTC::WebRTCConnection::createPeerConnection() {
   configuration.servers.push_back(secondServer);
   configuration.servers.push_back(thirdServer);
 
+  // this line currently segfaults...
   connection.peer_connection = peer_connection_factory->CreatePeerConnection(configuration, nullptr, nullptr, &connection.pco);
-
 
   if (connection.peer_connection.get() == nullptr) {
     peer_connection_factory = nullptr;
     std::cout << "Error on CreatePeerConnection." << std::endl;
     return;
   }
-  */
 
 }
 
 void LibWebRTC::WebRTCConnection::disconnectFromCurrentPeer(void) {
 
-  /*
   // TODO: Send message to other peer to disconnect
   connection.peer_connection->Close();
   connection.peer_connection = nullptr;
   connection.data_channel = nullptr;
+  thread->Quit();
   peer_connection_factory = nullptr;
 
-  thread->Quit();
-  */
 }
 
 std::string LibWebRTC::WebRTCConnection::get_offer(void) {
 
   return std::string("hello there!");
 
-  /*
   webrtc::DataChannelInit config;
   connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
   connection.data_channel->RegisterObserver(&connection.dco);
@@ -116,6 +111,5 @@ std::string LibWebRTC::WebRTCConnection::get_offer(void) {
   std::string offer = connection.get_sdp();
   
   return offer;
-  */
 
 }

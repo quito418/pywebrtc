@@ -13,16 +13,17 @@ namespace LibWebRTC {
   class WebRTCConnection {
   private:
 
-    rtc::PhysicalSocketServer socket_server; // TODO wtf is happening?
+    rtc::PhysicalSocketServer socket_server;
 
     Connection connection;
+
     CustomRunnable runnable;
+    std::mutex peer_connection_factory_mutex;
+    webrtc::PeerConnectionFactoryInterface *peer_connection_factory;
 
     std::unique_ptr<rtc::Thread> thread;
-    //webrtc::PeerConnectionFactoryInterface *peer_connection_factory;
     webrtc::PeerConnectionInterface::RTCConfiguration configuration;
     rtc::scoped_refptr<webrtc::DataChannelInterface> channel;
-    std::mutex peer_connection_factory_mutex;
     
     void createPeerConnection(void);
     void disconnectFromCurrentPeer(void);    

@@ -8,9 +8,11 @@ venv
 src/test_webrtc
 src/libwebrtc_hl.la
 src/libwebrtc_hl.lo
+src/runnable.lo
 src/.libs
 
 # other
+*~
 *.a
 *.o
 .deps
