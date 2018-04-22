@@ -25,9 +25,11 @@ module = Extension('pywebrtc._ext.pywebrtc',
                    include_dirs=['pywebrtc'],
                    library_dirs=[],
                    libraries=[],
-                   extra_compile_args=['-std=c++14', '-Wall', '-Wextra',
+                   extra_compile_args=['-I../src', '-std=c++14', '-Wall', '-Wextra',
                                        '-D', 'PYWEBRTC_VERSION={}'.format(VERSION)],
-                   extra_link_args=[]
+                   extra_link_args=['-L../src/.libs',
+                                    '-lwebrtc_hl',
+                                    '-lwebrtc']
                    )
 
 setup(

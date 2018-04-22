@@ -1,6 +1,6 @@
 all-local:
-	CFLAGS+="$(PYWRAPPER_EXTRA_CFLAGS)" \
-	LDFLAGS+="$(PYWRAPPER_EXTRA_LDFLAGS)" \
+	CFLAGS+="$(PYWRAPPER_EXTRA_CFLAGS) $(LIBWEBRTC_CFLAGS)" \
+	LDFLAGS+="$(PYWRAPPER_EXTRA_LDFLAGS) $(LIBWEBRTC_LIBS)" \
 	python3 setup.py build
 
 check-local:
@@ -12,8 +12,8 @@ clean-local:
 install-data-local:
 
 install-exec-local:
-	CFLAGS+="$(PYWRAPPER_EXTRA_CFLAGS)" \
-	LDFLAGS+="$(PYWRAPPER_EXTRA_LDFLAGS)" \
+	CFLAGS+="$(PYWRAPPER_EXTRA_CFLAGS) $(LIBWEBRTC_CFLAGS)" \
+	LDFLAGS+="$(PYWRAPPER_EXTRA_LDFLAGS) $(LIBWEBRTC_LIBS)" \
 	python3 setup.py install
 
 uninstall-local:

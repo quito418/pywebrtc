@@ -1,12 +1,16 @@
 #include <Python.h>
 
-extern "C" {
+#include <string>
+#include "libwebrtc_hl.hh"
 
+extern const uint32_t WebRTCConnectionSize;
+
+extern "C" {
+  
     typedef struct {
 
         PyObject_HEAD
-        
-        // CXXWebRTCObject my_object;
+	LibWebRTC::WebRTCConnection *connection;
         
     } PyWebRTCConnection;
 
@@ -15,24 +19,33 @@ extern "C" {
 
         PyWebRTCConnection *self;
 
-        self = (PyWebRTCConnection*)type->tp_alloc(type, 0);
+	self = (PyWebRTCConnection*)type->tp_alloc(type, 0);
         if(self == NULL) {
             PyErr_SetString(PyExc_ValueError, "Could not alloc a new PyWebRTCConnection.");
             return 0;
         }
-
+	
         return (PyObject*) self;
     }
 
     static void
     PyWebRTCConnection_dealloc(PyWebRTCConnection* self) {
-
-        Py_TYPE(self)->tp_free((PyObject*)self);
+      
+      delete self->connection;
+      Py_TYPE(self)->tp_free((PyObject*)self);
     }
     
     static int
     PyWebRTCConnection_init(PyWebRTCConnection *self, PyObject *args, PyObject *kwargs) {
 
+        if(sizeof(LibWebRTC::WebRTCConnection) == WebRTCConnectionSize) {
+          self->connection = new LibWebRTC::WebRTCConnection{"server"};
+	}
+	else {
+	  uint8_t *mem = new uint8_t[WebRTCConnectionSize];
+	  self->connection = new (mem) LibWebRTC::WebRTCConnection{"server"};
+	}
+	
         // char *counter_name = NULL;
 
         // static char *kwlist[] = { "counter_name", NULL };
@@ -126,7 +139,8 @@ extern "C" {
         // std::string sdp_response = self->my_object.get_sdp();
         // PyObject *sdp = PyUnicode_FromString(sdp_response.c_str());
        
-        PyObject *sdp = PyUnicode_FromString("you guys will put the SDP info here...");
+        PyObject *sdp = PyUnicode_FromString(self->connection->get_offer().c_str());
+        //PyObject *sdp = PyUnicode_FromString("hello world from python wrapper");
         
         return sdp;
     }

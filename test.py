@@ -2,6 +2,8 @@ import pywebrtc
 
 conn = pywebrtc.Connection('hello')
 
-conn.say_message()
+sdp = conn.get_sdp()
 
-print(conn.get_sdp())
+print('---------- BEGIN SDP ----------')
+print(sdp)
+print('---------- END SDP ----------')
