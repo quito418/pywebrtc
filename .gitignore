@@ -1,8 +1,10 @@
+
 out/
 *.swp
 python/build
 python/dist
 python/pywebrtc.egg-info/
+python/pywebrtc/__pycache__
 venv
 
 src/test_webrtc
