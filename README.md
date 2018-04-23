@@ -2,6 +2,25 @@
 
 **Description**: a python wrapper around the native webRTC API.
 
+## How to build
+
+```bash
+./autogen.sh
+./configure
+
+make clean # shouldn't be necessary, but run if you are paranoid
+make -j
+```
+
+## How to run test
+
+```bash
+export PYTHONPATH=$(pwd)/python/build/lib.linux-x86_64-3.5/
+export LD_LIBRARY_PATH=$(pwd)/src/.libs/
+
+python test.py
+```
+
 ## TODO list
 
 1. Compile [libwebrtc](https://github.com/aisouard/libwebrtc)
