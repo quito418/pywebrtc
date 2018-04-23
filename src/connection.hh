@@ -40,8 +40,8 @@ public:
 
 class Connection {
 private:
-  std::string sdp_;
-  std::atomic<bool> sdp_set;
+  std::string offer;
+  std::atomic<bool> offer_set;
   
 public:
     // Peer Connection
@@ -71,14 +71,14 @@ public:
 
 
       // TODO: Figure out how to send to signaling server
-      sdp_ = sdp;
-      sdp_set.store(true);
+      offer = picojson::value(information).serialize(true);
+      offer_set.store(true);
     }
 
   std::string get_sdp(void) {
-    while(!sdp_set.load()) {  }
+    while(!offer_set.load()) {  }
 
-    return sdp_;    
+    return offer;    
   }
   
     void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
@@ -196,7 +196,7 @@ public:
     rtc::scoped_refptr<SetSessionDescriptionObs> ssdo;
 
    Connection() :
-      sdp_set(false),
+      offer_set(false),
       pco(*this),
       dco(*this),
       csdo(new rtc::RefCountedObject<CreateSessionDescriptionObs>(*this)),

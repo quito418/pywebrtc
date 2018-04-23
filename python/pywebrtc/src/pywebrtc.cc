@@ -176,7 +176,7 @@ extern "C" {
               "Returns current value of the counter."
         },
         {"getSDP", (PyCFunction)PyWebRTCConnection_getSDP, METH_VARARGS,
-              "Returen the SDP."
+              "Returns the SDP."
         },
         {NULL, NULL, METH_VARARGS, ""}  /* Sentinel */
     };
