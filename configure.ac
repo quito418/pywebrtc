@@ -2,10 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([pywebrtc], [0.0.1], [jemmons@cs.stanford.edu])
+AC_INIT([pywebrtc], [0.0.0], [jemmons@cs.stanford.edu])
 AM_INIT_AUTOMAKE([foreign])
-# AC_CONFIG_SRCDIR([src/header.hh])
+AC_CONFIG_SRCDIR([src/libwebrtc_hl.hh])
 AC_CONFIG_HEADERS([config.h])
+
+VERSION_INFO=`echo $VERSION | sed -e 's/\./:/g'`
+AC_SUBST(VERSION_INFO)
 
 # include extra macros
 AC_CONFIG_MACRO_DIRS([m4])

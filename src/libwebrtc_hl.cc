@@ -13,6 +13,8 @@
 #include "libwebrtc_hl.hh"
 #include "connection.hh"
 
+extern const size_t WebRTCConnectionSize = sizeof(LibWebRTC::WebRTCConnection);
+
 LibWebRTC::WebRTCConnection::WebRTCConnection(std::string kind) :
   connection(),
   runnable(peer_connection_factory, peer_connection_factory_mutex)
