@@ -28,10 +28,17 @@ namespace LibWebRTC {
     WebRTCConnection(std::string kind);
     ~WebRTCConnection(void);
 
+    // Handshaking methods
     std::string get_offer(void);
+    void receiveAnswer(const std::string& parameter);
+    std::string receiveOffer(const std::string& parameter);
+    std::string getICEInformation(void);
+    void setICEInformation(const std::string& parameter);
 
+    // Data transfer methods
+    void sendString(const std::string& parameter);
     //void run(int argc, char* argv[]);
-  
+    
   };
   
 

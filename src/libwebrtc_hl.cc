@@ -103,6 +103,77 @@ std::string LibWebRTC::WebRTCConnection::get_offer(void) {
   connection.peer_connection->CreateOffer(connection.csdo, nullptr);
 
   std::string offer = connection.get_sdp();
-  
+
   return offer;
+}
+
+void LibWebRTC::WebRTCConnection::receiveAnswer(const std::string& parameter) {
+  webrtc::SdpParseError error;
+  webrtc::SessionDescriptionInterface* session_description(
+      webrtc::CreateSessionDescription("answer", parameter, &error));
+  if (session_description == nullptr) {
+    std::cout << "Error on CreateSessionDescription." << std::endl
+      << error.line << std::endl
+      << error.description << std::endl;
+  }
+  connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
+}
+
+void LibWebRTC::WebRTCConnection::receiveOffer(const std::string& parameter) {
+  webrtc::SdpParseError error;
+  webrtc::SessionDescriptionInterface* session_description(
+      webrtc::CreateSessionDescription("offer", parameter, &error));
+
+  if (session_description == nullptr) {
+    std::cout << "Error on CreateSessionDescription." << std::endl
+      << error.line << std::endl
+      << error.description << std::endl;
+  }
+
+  connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
+
+  connection.sdp_type = "answer";
+  connection.peer_connection->CreateAnswer(connection.csdo, nullptr);
+
+  std::string answer = connection.get_sdp();
+
+  return answer;
+}
+
+std::string LibWebRTC::WebRTCConnection::sendICEInformation(void) {
+  std::string connectionICE = picojson::value(connection.ice_array).serialize(true);
+  connection.ice_array.clear();
+  return connectionICE;
+}
+
+void LibWebRTC::WebRTCConnection::sendICEInformation(const std::string& parameter) {
+  picojson::value v;
+  std::string err = picojson::parse(v, parameter);
+  if (!err.empty()) {
+    std::cout << "Error on parse json : " << err << std::endl;
+    return;
+  }
+
+  webrtc::SdpParseError err_sdp;
+  for (auto& ice_it : v.get<picojson::array>()) {
+    picojson::object& ice_json = ice_it.get<picojson::object>();
+    webrtc::IceCandidateInterface* ice =
+      CreateIceCandidate(ice_json.at("sdpMid").get<std::string>(),
+          static_cast<int>(ice_json.at("sdpMLineIndex").get<double>()),
+          ice_json.at("candidate").get<std::string>(),
+          &err_sdp);
+    if (!err_sdp.line.empty() && !err_sdp.description.empty()) {
+      std::cout << "Error on CreateIceCandidate" << std::endl
+        << err_sdp.line << std::endl
+        << err_sdp.description << std::endl;
+      return;
+    }
+    connection.peer_connection->AddIceCandidate(ice);
+  }
+}
+
+void sendString(const std::string& parameter) {
+  webrtc::DataBuffer buffer(rtc::CopyOnWriteBuffer(parameter.c_str(), parameter.size()), true);
+  std::cout << "Send(" << connection.data_channel->state() << ")" << std::endl;
+  connection.data_channel->Send(buffer);
 }
