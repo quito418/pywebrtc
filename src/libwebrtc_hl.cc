@@ -119,7 +119,7 @@ void LibWebRTC::WebRTCConnection::receiveAnswer(const std::string& parameter) {
   connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
 }
 
-void LibWebRTC::WebRTCConnection::receiveOffer(const std::string& parameter) {
+std::string LibWebRTC::WebRTCConnection::receiveOffer(const std::string& parameter) {
   webrtc::SdpParseError error;
   webrtc::SessionDescriptionInterface* session_description(
       webrtc::CreateSessionDescription("offer", parameter, &error));
@@ -140,13 +140,13 @@ void LibWebRTC::WebRTCConnection::receiveOffer(const std::string& parameter) {
   return answer;
 }
 
-std::string LibWebRTC::WebRTCConnection::sendICEInformation(void) {
+std::string LibWebRTC::WebRTCConnection::getICEInformation(void) {
   std::string connectionICE = picojson::value(connection.ice_array).serialize(true);
   connection.ice_array.clear();
   return connectionICE;
 }
 
-void LibWebRTC::WebRTCConnection::sendICEInformation(const std::string& parameter) {
+void LibWebRTC::WebRTCConnection::setICEInformation(const std::string& parameter) {
   picojson::value v;
   std::string err = picojson::parse(v, parameter);
   if (!err.empty()) {
@@ -172,7 +172,7 @@ void LibWebRTC::WebRTCConnection::sendICEInformation(const std::string& paramete
   }
 }
 
-void sendString(const std::string& parameter) {
+void LibWebRTC::WebRTCConnection::sendString(const std::string& parameter) {
   webrtc::DataBuffer buffer(rtc::CopyOnWriteBuffer(parameter.c_str(), parameter.size()), true);
   std::cout << "Send(" << connection.data_channel->state() << ")" << std::endl;
   connection.data_channel->Send(buffer);
