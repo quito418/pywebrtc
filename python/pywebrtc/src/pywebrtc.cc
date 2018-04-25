@@ -36,157 +36,68 @@ extern "C" {
     
     static int
     PyWebRTCConnection_init(PyWebRTCConnection *self, PyObject *args, PyObject *kwargs) {
-        if(sizeof(LibWebRTC::WebRTCConnection) == WebRTCConnectionSize) {
+
+      if(sizeof(LibWebRTC::WebRTCConnection) == WebRTCConnectionSize) {
           self->connection = new LibWebRTC::WebRTCConnection{"server"};
 	}
-	else {
+
+      else {
 	  uint8_t *mem = new uint8_t[WebRTCConnectionSize];
 	  self->connection = new (mem) LibWebRTC::WebRTCConnection{"server"};
 	}
 	
-        // char *counter_name = NULL;
-
-        // static char *kwlist[] = { "counter_name", NULL };
-        // if (!PyArg_ParseTupleAndKeywords(args,
-        //                                  kwargs,
-        //                                  "s",
-        //                                  kwlist,
-        //                                  &counter_name)){
-
-        //     PyErr_SetString(PyExc_ValueError, "PyWebRTCConnection failed while parsing constructor args/kwargs.");
-        //     return 0;
-        // }
-
-        // if(counter_name == NULL) {
-
-        //     PyErr_SetString(PyExc_ValueError, "PyWebRTCConnection requires `counter_name` to be specified.");
-        //     return 0;
-        // }
-
-        // // std::cerr << "got it: '" << counter_name << "'\n";
-        // try {
-
-        //     libperf::PyWebRTCConnection *p = new libperf::PyWebRTCConnection{std::string(counter_name)};
-        //     self->counter = p;
-        // }
-        // catch(const std::exception& e) {
-
-        //     std::string error_message = std::string(e.what());
-        //     error_message += std::string(" Try running `pywebrtc.get_available_counters()` to list the available counters on your system.");
-        //     PyErr_SetString(PyExc_ValueError, error_message.c_str());
-        //     return 0;
-        // }
-        
         return 0;
     }
-
-    static PyObject*
-    PyWebRTCConnection_start(PyWebRTCConnection *self){
-
-        // try {
-        //     self->counter->start();
-        // }
-        // catch(const std::exception& e) {
-        //     PyErr_SetString(PyExc_ValueError, e.what());
-        //     return 0;
-        // }        
-
-        Py_RETURN_NONE;
-    }
-
-    static PyObject*
-    PyWebRTCConnection_stop(PyWebRTCConnection *self){
-
-        // try {
-        //     self->counter->stop();
-        // }
-        // catch(const std::exception& e) {
-        //     PyErr_SetString(PyExc_ValueError, e.what());
-        //     return 0;
-        // }
-
-        Py_RETURN_NONE;
-    }
-
-    static PyObject*
-    PyWebRTCConnection_reset(PyWebRTCConnection *self){
-
-        // try {
-        //     self->counter->reset();       
-        // }
-        // catch(const std::exception& e) {
-        //     PyErr_SetString(PyExc_ValueError, e.what());
-        //     return 0;
-        // }
-
-        Py_RETURN_NONE;
-    }
-
     static PyObject*
     PyWebRTCConnection_getSDP(PyWebRTCConnection *self){
 
-        // uint64_t counter_val;
-        // try {
-        //     counter_val = self->counter->getval();
-        // }
-        // catch(const std::exception& e) {
-        //     PyErr_SetString(PyExc_ValueError, e.what());
-        //     return 0;
-        // }
-
-        // std::string sdp_response = self->my_object.get_sdp();
-        // PyObject *sdp = PyUnicode_FromString(sdp_response.c_str());
-       
-        PyObject *sdp = PyUnicode_FromString(self->connection->get_offer().c_str());
-        //PyObject *sdp = PyUnicode_FromString("hello world from python wrapper");
-        
-        return sdp;
-    }
-
-    
-    static PyObject*
-    PyWebRTCConnection_getval(PyWebRTCConnection *self){
-
-        // uint64_t counter_val;
-        // try {
-        //     counter_val = self->counter->getval();
-        // }
-        // catch(const std::exception& e) {
-        //     PyErr_SetString(PyExc_ValueError, e.what());
-        //     return 0;
-        // }
-
-        static_assert(sizeof(uint64_t) <= sizeof(unsigned long long), "sizeof(uint64_t) <= sizeof(long long) must be true");
-        PyObject *val = PyLong_FromUnsignedLongLong(static_cast<unsigned long long>(42));
-        
-        return val;
-    }
-
-    static void
-    PyWebRTCConnection_receiveAnswer(PyWebRTCConnection *self, std::string answer){
-        self->connection->receiveAnswer(answer);
+      PyObject *sdp = PyUnicode_FromString(self->connection->get_offer().c_str());
+      return sdp;
     }
 
     static PyObject*
-    PyWebRTCConnection_receiveOffer(PyWebRTCConnection *self, std::string offer){
-        PyObject *answer = PyUnicode_FromString(self->connection->receiveOffer(offer).c_str());
-        return answer;
+    PyWebRTCConnection_receiveAnswer(PyWebRTCConnection *self, PyObject *args){
+
+      char *answer;
+      if (!PyArg_ParseTuple(args, "s",
+			    &answer)){
+	return 0;
+      }
+      
+      self->connection->receiveAnswer(answer);
+
+      Py_RETURN_NONE;
+
     }
 
     static PyObject*
-    PyWebRTCConnection_getICEInformation(PyWebRTCConnection *self){
-        PyObject *iceInfo = PyUnicode_FromString(self->connection->getICEInformation().c_str());
-        return iceInfo;
+    PyWebRTCConnection_receiveOffer(PyWebRTCConnection *self, PyObject*){
+      Py_RETURN_NONE;
+
+      //PyObject *answer = PyUnicode_FromString(self->connection->receiveOffer(offer).c_str());
+      //return answer;
     }
 
-    static void
-    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, std::string iceInfo){
-        self->connection->setICEInformation(iceInfo);
+   static PyObject*
+    PyWebRTCConnection_getICEInformation(PyWebRTCConnection *self, PyObject*){
+      Py_RETURN_NONE;
+
+      //PyObject *iceInfo = PyUnicode_FromString(self->connection->getICEInformation().c_str());
+      //return iceInfo;
     }
 
-    static void
-    PyWebRTCConnection_sendString(PyWebRTCConnection *self, std::string myString){
-        self->connection->sendString(myString);
+    static PyObject*
+    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject*){
+      Py_RETURN_NONE;
+
+      //self->connection->setICEInformation(iceInfo);
+    }
+
+    static PyObject*
+    PyWebRTCConnection_sendString(PyWebRTCConnection *self, PyObject*){
+      Py_RETURN_NONE;
+
+      //self->connection->sendString(myString);
     }
 
 
@@ -194,18 +105,6 @@ extern "C" {
 
 
     static PyMethodDef PyWebRTCConnection_methods[] = {
-        {"start", (PyCFunction)PyWebRTCConnection_start, METH_VARARGS,
-              "Starts the counter."
-        },
-        {"stop", (PyCFunction)PyWebRTCConnection_stop, METH_VARARGS,
-              "Stops the counter."
-        },
-        {"reset", (PyCFunction)PyWebRTCConnection_reset, METH_VARARGS,
-              "Resets the counter that the subsequent call to `start` will begin at zero."
-        },
-        {"getval", (PyCFunction)PyWebRTCConnection_getval, METH_VARARGS,
-              "Returns current value of the counter."
-        },
         {"getSDP", (PyCFunction)PyWebRTCConnection_getSDP, METH_VARARGS,
               "Returns the SDP."
         },
