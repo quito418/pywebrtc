@@ -18,5 +18,6 @@ parser.add_argument('type', metavar='t', type=str, nargs='+',
                    help='sets the type of the connection')
 
 args = parser.parse_args()
-conn = pywebrtc.Connection(args.type, args.id, "wss://ccr-frontend-0.jemmons.us/ccr")
+
+conn = pywebrtc.Connection(args.type[0], args.id[0], "wss://ccr-frontend-0.jemmons.us/ccr")
 conn.run_websocket()
