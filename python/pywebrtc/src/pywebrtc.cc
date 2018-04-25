@@ -162,6 +162,37 @@ extern "C" {
         return val;
     }
 
+    static void
+    PyWebRTCConnection_receiveAnswer(PyWebRTCConnection *self, std::string answer){
+        self->connection->receiveAnswer(answer);
+    }
+
+    static PyObject*
+    PyWebRTCConnection_receiveOffer(PyWebRTCConnection *self, std::string offer){
+        PyObject *answer = PyUnicode_FromString(self->connection->receiveOffer(offer).c_str());
+        return answer;
+    }
+
+    static PyObject*
+    PyWebRTCConnection_getICEInformation(PyWebRTCConnection *self){
+        PyObject *iceInfo = PyUnicode_FromString(self->connection->getICEInformation().c_str());
+        return iceInfo;
+    }
+
+    static void
+    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, std::string iceInfo){
+        self->connection->setICEInformation(iceInfo);
+    }
+
+    static void
+    PyWebRTCConnection_sendString(PyWebRTCConnection *self, std::string myString){
+        self->connection->sendString(myString);
+    }
+
+
+
+
+
     static PyMethodDef PyWebRTCConnection_methods[] = {
         {"start", (PyCFunction)PyWebRTCConnection_start, METH_VARARGS,
               "Starts the counter."
@@ -178,6 +209,24 @@ extern "C" {
         {"getSDP", (PyCFunction)PyWebRTCConnection_getSDP, METH_VARARGS,
               "Returns the SDP."
         },
+        {"receiveAnswer", (PyCFunction)PyWebRTCConnection_receiveAnswer, METH_VARARGS,
+              "Sets remote description using the answer."
+        },
+        {"receiveOffer", (PyCFunction)PyWebRTCConnection_receiveOffer, METH_VARARGS,
+              "Sets remote description using the offer."
+        },
+        {"getICEInformation", (PyCFunction)PyWebRTCConnection_getICEInformation, METH_VARARGS,
+              "Returns the ICE information."
+        },
+        {"setICEInformation", (PyCFunction)PyWebRTCConnection_setICEInformation, METH_VARARGS,
+              "Adds the ICE Candidate to the peer connection."
+        },
+        {"sendString", (PyCFunction)PyWebRTCConnection_sendString, METH_VARARGS,
+              "Sends a string through the data channel"
+        },
+
+
+
         {NULL, NULL, METH_VARARGS, ""}  /* Sentinel */
     };
     
