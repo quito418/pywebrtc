@@ -67,7 +67,6 @@ class Connection:
             self.ws.send(message)
             print("Kind sent!")
             
-            print(self.type)
             if(self.type == "client"):
                 print("Hello")
                 # Get sdp information and send offer
@@ -84,7 +83,6 @@ class Connection:
     
     def run_websocket(self):
         #websocket.enableTrace(True)
-        
         self.ws.run_forever()
 
 
