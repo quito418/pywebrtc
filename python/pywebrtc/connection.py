@@ -55,7 +55,7 @@ def create_on_open(connection):
                 sdpValues = {"type": "offer", "sdp":json.loads(sdp)}
                 print("Message: "+message)
                 message = json.dumps(sdpValues) 
-                ws.send()
+                ws.send(message)
                 print("SDP Sent!")
         #thread.start_new_thread(run, ())
         run()
@@ -72,17 +72,11 @@ class Connection:
           on_close=on_close)
         self.ws.on_open = create_on_open(self)
         self.type = type_
-        self.id = {"type": "kind", "kind": type_[0], "connection_id": id_[0]}
+        self.id = {"type": "kind", "kind": type_, "connection_id": id_}
 
     def run_websocket(self):
-        #websocket.enableTrace(True)
-        """
-        self.ws.on_message = on_message
-        self.ws.on_error = on_error
-        self.ws.on_close = on_close
-        self.ws.on_open = create_on_open(self)
-        """
-        
+        websocket.enableTrace(True)
+
         self.ws.run_forever()
 
 
