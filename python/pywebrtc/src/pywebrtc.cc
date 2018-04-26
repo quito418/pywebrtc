@@ -61,7 +61,7 @@ extern "C" {
       char *answer;
       if (!PyArg_ParseTuple(args, "s",
 			    &answer)){
-	    return 0;
+	        return 0;
       }
       
       self->connection->receiveAnswer(answer);
@@ -87,16 +87,14 @@ extern "C" {
     }
 
     static PyObject*
-    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject *args){
-        
-      char *iceInfo;
-      if (!PyArg_ParseTuple(args, "s",
-			    &iceInfo)){
-        return 0;
+    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject* py_ice_info){
+      char *ice_info;
+      if (!PyArg_ParseTuple(py_ice_info, "s",
+			    &ice_info)){
+          return 0;
       }
-      std::cout << "ICE INFO " << iceInfo << std::endl;
-      self->connection->setICEInformation(iceInfo);
-      std::cout << "success " << std::endl;
+
+      self->connection->setICEInformation(ice_info);
       Py_RETURN_NONE;
     }
 
