@@ -110,7 +110,11 @@ extern "C" {
       Py_RETURN_NONE;
     }
 
-
+    static PyObject*
+    PyWebRTCConnection_setCloseWebsocketCallback(PyWebRTCConnection *self, PyObject *callback_function){
+      self->connection->connection.close_websocket_callback = callback_function;
+      Py_RETURN_NONE;
+    }
 
 
 
@@ -133,6 +137,10 @@ extern "C" {
         {"sendString", (PyCFunction)PyWebRTCConnection_sendString, METH_VARARGS,
               "Sends a string through the data channel"
         },
+        {"setCloseWebsocketCallback", (PyCFunction)PyWebRTCConnection_setCloseWebsocketCallback, METH_VARARGS,
+              "Sets a function to be called when signaling is done"
+        },
+
 
 
 

@@ -12,6 +12,7 @@ class Connection:
     
     def __init__(self, type_, id_, signalingServer):
         self.conn = pywebrtc_wrapper.PyWebRTCConnection()
+        self.conn.setCloseWebsocketCallback(self.closeWebsocket)
         self.ws = websocket.WebSocketApp(signalingServer, 
           on_message=self.on_message,
           on_error=self.on_error,
@@ -93,6 +94,9 @@ class Connection:
                 
         thread.start_new_thread(run, ())
 
+    def closeWebsocket(self):
+      print('closing websocket!')
+      self.ws.keep_running = False
     
     def run_websocket(self):
         #websocket.enableTrace(True)

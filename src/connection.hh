@@ -8,6 +8,7 @@
 #include <webrtc/base/thread.h>
 #include <webrtc/base/flags.h>
 #include <webrtc/base/physicalsocketserver.h>
+#include <Python.h>
 
 #include "picojson.h"
 
@@ -52,6 +53,7 @@ public:
     std::string sdp_type;
     // ICE Information
     picojson::array ice_array;
+    PyObject *close_websocket_callback;
 
     //websocket::stream<<ssl::stream<tcp::socket>>* ws;
 
@@ -72,6 +74,10 @@ public:
 
       offer = picojson::value(information).serialize(true);
       offer_set.store(true);
+      std::cout << "Calling python success callback" << std::endl;
+
+      //PyObject_CallObject(parent.close_websocket_callback, NULL);
+      
     }
 
     std::string get_sdp(void) {
@@ -89,6 +95,7 @@ public:
       ice.insert(std::make_pair("sdpMid", picojson::value(candidate->sdp_mid())));
       ice.insert(std::make_pair("sdpMLineIndex", picojson::value(static_cast<double>(candidate->sdp_mline_index()))));
       ice_array.push_back(picojson::value(ice));
+      std::cout << "ICE Candidate added" << std::endl;
     }
 
     // Used to receive callbacks from the PeerConnection
