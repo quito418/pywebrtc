@@ -155,19 +155,21 @@ void LibWebRTC::WebRTCConnection::setICEInformation(const std::string& parameter
   }
 
   webrtc::SdpParseError err_sdp;
-  picojson::object ice_json = v.get<picojson::object>().at("candidate").get<picojson::object>();
-  webrtc::IceCandidateInterface* ice =
-    CreateIceCandidate(ice_json.at("sdpMid").get<std::string>(),
-        static_cast<int>(ice_json.at("sdpMLineIndex").get<double>()),
-        ice_json.at("candidate").get<std::string>(),
-        &err_sdp);
-  if (!err_sdp.line.empty() && !err_sdp.description.empty()) {
-    std::cout << "Error on CreateIceCandidate" << std::endl
-      << err_sdp.line << std::endl
-      << err_sdp.description << std::endl;
-    return;
+  for (auto& ice_it : v.get<picojson::array>()) {
+    picojson::object& ice_json = ice_it.get<picojson::object>();
+    webrtc::IceCandidateInterface* ice =
+      CreateIceCandidate(ice_json.at("sdpMid").get<std::string>(),
+          static_cast<int>(ice_json.at("sdpMLineIndex").get<double>()),
+          ice_json.at("candidate").get<std::string>(),
+          &err_sdp);
+    if (!err_sdp.line.empty() && !err_sdp.description.empty()) {
+      std::cout << "Error on CreateIceCandidate" << std::endl
+        << err_sdp.line << std::endl
+        << err_sdp.description << std::endl;
+      return;
+    }
+    connection.peer_connection->AddIceCandidate(ice);
   }
-  connection.peer_connection->AddIceCandidate(ice);
 }
 
 void LibWebRTC::WebRTCConnection::sendString(const std::string& parameter) {
