@@ -30,7 +30,8 @@ class Connection:
 
     # TODO
     def onCandidate(self, candidate):
-        print ("Candidate: " + candidate)
+        print("Received a candidate: " + candidate)
+        self.conn.setICEInformation(candidate) 
 
     def on_message(self, ws, data):
         print("Received: " + data)
@@ -44,8 +45,19 @@ class Connection:
             print("Answer Sent!")
         elif(parsedData['type'] == "answer"):
             self.onAnswer(parsedData['sdp']['sdp'])
+            # After we get an answer, we have ICE information to send
+
+            print("######### SENDING ICE INFORMATION #########")
+            jsonICE = json.loads(self.conn.getICEInformation())
+            for iceCandidate in jsonICE:
+                candidateValue = {"type": "candidate", "candidate": iceCandidate}
+                candidateMessage = json.dumps(candidateValue)
+                self.ws.send(candidateMessage)
+                print("Message: " + candidateMessage)
+            print("######## #FINISHED ICE INFORMATION #######")
         elif(parsedData['type'] == "candidate"):
-            self.onCandidate(data)
+            candidate = parsedData['candidate']
+            self.onCandidate(json.dumps([candidate]))
         else:
             print("Undefined Message. Shutting down websocket.")
             self.ws.close()

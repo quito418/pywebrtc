@@ -70,16 +70,15 @@ public:
       information.insert(std::make_pair("type", picojson::value(sdp_type)));
 
 
-      // TODO: Figure out how to send to signaling server
       offer = picojson::value(information).serialize(true);
       offer_set.store(true);
     }
 
-  std::string get_sdp(void) {
-    while(!offer_set.load()) {  }
+    std::string get_sdp(void) {
+      while(!offer_set.load()) {  }
 
-    return offer;    
-  }
+      return offer;    
+    }
   
     void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
       std::cout << "On ICE Candidate" << std::endl;
@@ -132,6 +131,7 @@ public:
 
         void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {
           std::cout << "PeerConnectionObserver On Ice Candidate" << std::endl;
+          parent.OnIceCandidate(candidate);
         };
     };
 

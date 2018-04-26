@@ -61,43 +61,55 @@ extern "C" {
       char *answer;
       if (!PyArg_ParseTuple(args, "s",
 			    &answer)){
-	return 0;
+	    return 0;
       }
       
       self->connection->receiveAnswer(answer);
-
       Py_RETURN_NONE;
-
     }
 
     static PyObject*
-    PyWebRTCConnection_receiveOffer(PyWebRTCConnection *self, PyObject*){
-      Py_RETURN_NONE;
+    PyWebRTCConnection_receiveOffer(PyWebRTCConnection *self, PyObject *args){
+      char *offer;
+      if (!PyArg_ParseTuple(args, "s",
+			    &offer)){
+        return 0;
+      }
 
-      //PyObject *answer = PyUnicode_FromString(self->connection->receiveOffer(offer).c_str());
-      //return answer;
+      PyObject *answer = PyUnicode_FromString(self->connection->receiveOffer(offer).c_str());
+      return answer;
     }
 
    static PyObject*
-    PyWebRTCConnection_getICEInformation(PyWebRTCConnection *self, PyObject*){
-      Py_RETURN_NONE;
-
-      //PyObject *iceInfo = PyUnicode_FromString(self->connection->getICEInformation().c_str());
-      //return iceInfo;
+    PyWebRTCConnection_getICEInformation(PyWebRTCConnection *self){
+      PyObject *iceInfo = PyUnicode_FromString(self->connection->getICEInformation().c_str());
+      return iceInfo;
     }
 
     static PyObject*
-    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject*){
+    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject *args){
+        
+      char *iceInfo;
+      if (!PyArg_ParseTuple(args, "s",
+			    &iceInfo)){
+        return 0;
+      }
+      std::cout << "ICE INFO " << iceInfo << std::endl;
+      self->connection->setICEInformation(iceInfo);
+      std::cout << "success " << std::endl;
       Py_RETURN_NONE;
-
-      //self->connection->setICEInformation(iceInfo);
     }
 
     static PyObject*
-    PyWebRTCConnection_sendString(PyWebRTCConnection *self, PyObject*){
-      Py_RETURN_NONE;
+    PyWebRTCConnection_sendString(PyWebRTCConnection *self, PyObject *args){
+      char *message;
+     if (!PyArg_ParseTuple(args, "s",
+			    &message)){ 
+        return 0;
+      }
 
-      //self->connection->sendString(myString);
+      self->connection->sendString(message);
+      Py_RETURN_NONE;
     }
 
 
