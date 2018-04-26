@@ -61,7 +61,7 @@ extern "C" {
       char *answer;
       if (!PyArg_ParseTuple(args, "s",
 			    &answer)){
-	return 0;
+	        return 0;
       }
       
       self->connection->receiveAnswer(answer);
@@ -87,10 +87,15 @@ extern "C" {
     }
 
     static PyObject*
-    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject*){
-      Py_RETURN_NONE;
+    PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject* py_ice_info){
+      char *ice_info;
+      if (!PyArg_ParseTuple(py_ice_info, "s",
+			    &ice_info)){
+          return 0;
+      }
 
-      //self->connection->setICEInformation(iceInfo);
+      self->connection->setICEInformation(ice_info);
+      Py_RETURN_NONE;
     }
 
     static PyObject*

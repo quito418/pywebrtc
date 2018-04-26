@@ -28,9 +28,9 @@ class Connection:
         print("Received an answer: " + answer)
         self.conn.receiveAnswer(answer)
 
-    # TODO
     def onCandidate(self, candidate):
         print ("Candidate: " + candidate)
+        self.conn.setICEInformation(candidate)
 
     def on_message(self, ws, data):
         print("Received: " + data)
