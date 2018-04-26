@@ -22,16 +22,26 @@ class Connection:
 
     def onOffer(self, offer):
         print("Received an offer: " + offer)
-        return receiveOffer(offer)
+        return self.conn.receiveOffer(offer)
 
     def onAnswer(self, answer):
         print("Received an answer: " + answer)
         self.conn.receiveAnswer(answer)
 
-    # TODO
+    
     def onCandidate(self, candidate):
         print("Received a candidate: " + candidate)
         self.conn.setICEInformation(candidate) 
+
+    def sendCandidateInformation(self):
+        print("######### SENDING ICE INFORMATION #########")
+        jsonICE = json.loads(self.conn.getICEInformation())
+        for iceCandidate in jsonICE:
+            candidateValue = {"type": "candidate", "candidate": iceCandidate}
+            candidateMessage = json.dumps(candidateValue)
+            self.ws.send(candidateMessage)
+            print("Message: " + candidateMessage)
+        print("######## #FINISHED ICE INFORMATION #######")
 
     def on_message(self, ws, data):
         print("Received: " + data)
@@ -42,19 +52,10 @@ class Connection:
             sdpValues = {"type": "answer", "sdp": json.loads(answer)}
             message = json.dumps(sdpValues)
             self.ws.send(message)
-            print("Answer Sent!")
+            self.sendCandidateInformation()
         elif(parsedData['type'] == "answer"):
             self.onAnswer(parsedData['sdp']['sdp'])
-            # After we get an answer, we have ICE information to send
-
-            print("######### SENDING ICE INFORMATION #########")
-            jsonICE = json.loads(self.conn.getICEInformation())
-            for iceCandidate in jsonICE:
-                candidateValue = {"type": "candidate", "candidate": iceCandidate}
-                candidateMessage = json.dumps(candidateValue)
-                self.ws.send(candidateMessage)
-                print("Message: " + candidateMessage)
-            print("######## #FINISHED ICE INFORMATION #######")
+            self.sendCandidateInformation()
         elif(parsedData['type'] == "candidate"):
             candidate = parsedData['candidate']
             self.onCandidate(json.dumps([candidate]))
