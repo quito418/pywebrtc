@@ -8,7 +8,6 @@
 #include <webrtc/base/thread.h>
 #include <webrtc/base/flags.h>
 #include <webrtc/base/physicalsocketserver.h>
-#include <Python.h>
 
 #include "picojson.h"
 
@@ -45,6 +44,7 @@ private:
   std::atomic<bool> offer_set;
   
 public:
+    std::atomic<bool> datachannel_open;
     // Peer Connection
     rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection;
     // Data Channel
@@ -53,7 +53,6 @@ public:
     std::string sdp_type;
     // ICE Information
     picojson::array ice_array;
-    PyObject *close_websocket_callback;
 
     //websocket::stream<<ssl::stream<tcp::socket>>* ws;
 
@@ -75,9 +74,6 @@ public:
       offer = picojson::value(information).serialize(true);
       offer_set.store(true);
       std::cout << "Calling python success callback" << std::endl;
-
-      //PyObject_CallObject(parent.close_websocket_callback, NULL);
-      
     }
 
     std::string get_sdp(void) {
@@ -152,9 +148,11 @@ public:
         void OnStateChange() override {
           std::cout << "DataChannelObserver On State Change" << std::endl;
           // TODO: Here we need to tell the socket that we something happened and for it to trigger the next part of the data channel
-          webrtc::DataChannelInterface::DataState state = data_channel->state();
+          webrtc::DataChannelInterface::DataState state = parent.data_channel->state();
           if (state == webrtc::DataChannelInterface::kOpen) {
             std::cout << "Data Channel is now open." << std::endl;
+            parent.datachannel_open.store(true);
+            std::cout << "Datachannel_open: " << parent.datachannel_open.load() << std::endl;
           }
         };
 
@@ -209,6 +207,7 @@ public:
 
    Connection() :
       offer_set(false),
+      datachannel_open(false),
       pco(*this),
       dco(*this),
       csdo(new rtc::RefCountedObject<CreateSessionDescriptionObs>(*this)),

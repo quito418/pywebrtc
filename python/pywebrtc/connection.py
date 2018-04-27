@@ -20,6 +20,7 @@ class Connection:
         self.ws.on_open = self.on_open
         self.type = type_
         self.id = {"type": "kind", "kind": type_, "connection_id": id_}
+        
 
     def onOffer(self, offer):
         print("Received an offer: " + offer)
@@ -90,16 +91,25 @@ class Connection:
                 print("Message: "+message)
                 self.ws.send(message)
                 print("SDP Sent!")
+
+            while(not self.conn.datachannelOpen()):
+              time.sleep(0.1)
+
+            self.closeWebsocket()
+
                 
         thread.start_new_thread(run, ())
 
     def closeWebsocket(self):
-      print('closing websocket!')
+      print('*************-------------closing websocket!-------------**********')
       self.ws.close()
     
     def run_websocket(self):
         #websocket.enableTrace(True)
         self.ws.run_forever()
+
+    def send_string(self, message):
+        self.conn.sendString(message)
 
 
 

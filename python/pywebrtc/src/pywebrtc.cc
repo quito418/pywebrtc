@@ -110,12 +110,16 @@ extern "C" {
       Py_RETURN_NONE;
     }
 
-    /*static PyObject*
-    PyWebRTCConnection_setCloseWebsocketCallback(PyWebRTCConnection *self, PyObject *callback_function){
-      self->connection->connection.close_websocket_callback = callback_function;
-      Py_RETURN_NONE;
-    }*/
-
+    static PyObject*
+    PyWebRTCConnection_datachannelOpen(PyWebRTCConnection *self, PyObject *callback_function){
+      if(self->connection->dataChannelOpen()) {
+        std::cout << "DataChannelOpen:" << self->connection->dataChannelOpen() << std::endl;
+        Py_RETURN_TRUE;
+      }
+      else {
+        Py_RETURN_FALSE;
+      }
+    }
 
 
     static PyMethodDef PyWebRTCConnection_methods[] = {
@@ -137,9 +141,9 @@ extern "C" {
         {"sendString", (PyCFunction)PyWebRTCConnection_sendString, METH_VARARGS,
               "Sends a string through the data channel"
         },
-        /*{"setCloseWebsocketCallback", (PyCFunction)PyWebRTCConnection_setCloseWebsocketCallback, METH_VARARGS,
-              "Sets a function to be called when signaling is done"
-        },*/
+        {"datachannelOpen", (PyCFunction)PyWebRTCConnection_datachannelOpen, METH_VARARGS,
+              "Checks if the data channel is now open"
+        },
 
 
 
