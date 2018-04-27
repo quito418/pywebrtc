@@ -53,6 +53,8 @@ public:
     std::string sdp_type;
     // ICE Information
     picojson::array ice_array;
+    // Data String
+    std::string data_string;
 
     //websocket::stream<<ssl::stream<tcp::socket>>* ws;
 
@@ -81,6 +83,12 @@ public:
 
       return offer;    
     }
+
+    std::string get_data(void) {
+      std::string temp_string = data_string;
+      data_string = ""
+      return temp_string;
+    }    
   
     void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
       std::cout << "On ICE Candidate" << std::endl;
@@ -159,6 +167,10 @@ public:
         void OnMessage(const webrtc::DataBuffer& buffer) override {
           std::cout << "DataChannelObserver On Message" << std::endl;
           std::cout << std::string(buffer.data.data<char>(), buffer.data.size()) << std::endl;
+
+          size_t size = buffer.data.size();
+          std::string parsed(buffer.data.data(), size);
+          data_string += parsed;
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {
