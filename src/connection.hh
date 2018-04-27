@@ -151,6 +151,11 @@ public:
 
         void OnStateChange() override {
           std::cout << "DataChannelObserver On State Change" << std::endl;
+          // TODO: Here we need to tell the socket that we something happened and for it to trigger the next part of the data channel
+          webrtc::DataChannelInterface::DataState state = data_channel->state();
+          if (state == webrtc::DataChannelInterface::kOpen) {
+            std::cout << "Data Channel is now open." << std::endl;
+          }
         };
 
         void OnMessage(const webrtc::DataBuffer& buffer) override {

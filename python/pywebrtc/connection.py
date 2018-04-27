@@ -12,7 +12,7 @@ class Connection:
     
     def __init__(self, type_, id_, signalingServer):
         self.conn = pywebrtc_wrapper.PyWebRTCConnection()
-        self.conn.setCloseWebsocketCallback(self.closeWebsocket)
+        #self.conn.setCloseWebsocketCallback(self.closeWebsocket)
         self.ws = websocket.WebSocketApp(signalingServer, 
           on_message=self.on_message,
           on_error=self.on_error,
@@ -82,7 +82,6 @@ class Connection:
             print("Kind sent!")
             
             if(self.type == "client"):
-                print("Hello")
                 # Get sdp information and send offer
                 sdp = self.conn.getSDP()
                 print("Sending SDP")
@@ -96,7 +95,7 @@ class Connection:
 
     def closeWebsocket(self):
       print('closing websocket!')
-      self.ws.keep_running = False
+      self.ws.close()
     
     def run_websocket(self):
         #websocket.enableTrace(True)
