@@ -83,7 +83,7 @@ public:
 
       return offer;    
     }
-  
+
     void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
       std::cout << "On ICE Candidate" << std::endl;
       picojson::object ice;
@@ -162,7 +162,6 @@ public:
           std::string buffer_contents = std::string(buffer.data.data<char>(), buffer.data.size());
           std::cout << buffer_contents << std::endl;
           parent.data_buffer.push_back(buffer_contents);
-
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {

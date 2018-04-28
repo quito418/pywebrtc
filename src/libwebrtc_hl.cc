@@ -178,7 +178,6 @@ void LibWebRTC::WebRTCConnection::sendString(const std::string& parameter) {
   connection.data_channel->Send(buffer);
 }
 
-
 bool LibWebRTC::WebRTCConnection::dataChannelOpen() {
   return connection.datachannel_open.load();
 

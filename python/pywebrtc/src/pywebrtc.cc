@@ -136,7 +136,6 @@ extern "C" {
       return list;
     }
 
-
     static PyMethodDef PyWebRTCConnection_methods[] = {
         {"getSDP", (PyCFunction)PyWebRTCConnection_getSDP, METH_VARARGS,
               "Returns the SDP."
@@ -162,7 +161,6 @@ extern "C" {
         {"readFromDataChannel", (PyCFunction)PyWebRTCConnection_readFromDataChannel, METH_VARARGS,
               "Returns a list of strings received by the data channel in oldest to newest order. Clears the buffer after calling."
         },
-
 
 
 
