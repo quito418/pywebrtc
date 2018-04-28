@@ -111,14 +111,29 @@ extern "C" {
     }
 
     static PyObject*
-    PyWebRTCConnection_datachannelOpen(PyWebRTCConnection *self, PyObject *callback_function){
+    PyWebRTCConnection_datachannelOpen(PyWebRTCConnection *self){
       if(self->connection->dataChannelOpen()) {
-        std::cout << "DataChannelOpen:" << self->connection->dataChannelOpen() << std::endl;
         Py_RETURN_TRUE;
       }
       else {
         Py_RETURN_FALSE;
       }
+    }
+
+    static PyObject*
+    PyWebRTCConnection_readFromDataChannel(PyWebRTCConnection *self){
+      size_t size = self->connection->dataBuffer().size();
+      Py_ssize_t py_size = size;
+      PyObject *list = PyList_New(py_size);
+      size_t i;
+      for(i = 0; i < size; i++) {
+          std::string message = self->connection->dataBuffer().at(i);
+          PyObject *message_string = PyUnicode_FromString(message.c_str());
+          Py_ssize_t index = i;
+          PyList_SetItem(list, index, message_string);
+      }
+      self->connection->clearDataBuffer();
+      return list;
     }
 
 
@@ -144,6 +159,10 @@ extern "C" {
         {"datachannelOpen", (PyCFunction)PyWebRTCConnection_datachannelOpen, METH_VARARGS,
               "Checks if the data channel is now open"
         },
+        {"readFromDataChannel", (PyCFunction)PyWebRTCConnection_readFromDataChannel, METH_VARARGS,
+              "Returns a list of strings received by the data channel in oldest to newest order. Clears the buffer after calling."
+        },
+
 
 
 

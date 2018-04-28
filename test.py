@@ -10,6 +10,7 @@
 import websocket
 import pywebrtc
 import argparse
+import time
 
 parser = argparse.ArgumentParser(description='Determine Settings')
 parser.add_argument('id', metavar='i', type=int, nargs='+',
@@ -21,5 +22,8 @@ args = parser.parse_args()
 conn = pywebrtc.Connection(args.type[0], args.id[0], "wss://ccr-frontend-0.jemmons.us/ccr")
 conn.run_websocket()
 conn.send_string('hi!')
+contents = conn.read_from_data_channel()
 while(True):
-  pass
+  contents = conn.read_from_data_channel()
+  print(contents)
+  time.sleep(.5)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <vector>
 
 #include <webrtc/api/mediastreaminterface.h>
 #include <webrtc/api/peerconnectioninterface.h>
@@ -53,6 +54,7 @@ public:
     std::string sdp_type;
     // ICE Information
     picojson::array ice_array;
+    std::vector<std::string> data_buffer;
 
     //websocket::stream<<ssl::stream<tcp::socket>>* ws;
 
@@ -147,7 +149,6 @@ public:
 
         void OnStateChange() override {
           std::cout << "DataChannelObserver On State Change" << std::endl;
-          // TODO: Here we need to tell the socket that we something happened and for it to trigger the next part of the data channel
           webrtc::DataChannelInterface::DataState state = parent.data_channel->state();
           if (state == webrtc::DataChannelInterface::kOpen) {
             std::cout << "Data Channel is now open." << std::endl;
@@ -158,7 +159,10 @@ public:
 
         void OnMessage(const webrtc::DataBuffer& buffer) override {
           std::cout << "DataChannelObserver On Message" << std::endl;
-          std::cout << std::string(buffer.data.data<char>(), buffer.data.size()) << std::endl;
+          std::string buffer_contents = std::string(buffer.data.data<char>(), buffer.data.size());
+          std::cout << buffer_contents << std::endl;
+          parent.data_buffer.push_back(buffer_contents);
+
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {

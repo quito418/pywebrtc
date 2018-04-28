@@ -184,3 +184,10 @@ bool LibWebRTC::WebRTCConnection::dataChannelOpen() {
 
 }
 
+std::vector<std::string> LibWebRTC::WebRTCConnection::dataBuffer() {
+  return connection.data_buffer;
+}
+
+void LibWebRTC::WebRTCConnection::clearDataBuffer() {
+  connection.data_buffer.clear();
+}

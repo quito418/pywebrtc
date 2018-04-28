@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 #include "connection.hh"
 
@@ -38,6 +39,8 @@ namespace LibWebRTC {
     // Data transfer methods
     void sendString(const std::string& parameter);
     bool dataChannelOpen();
+    std::vector<std::string> dataBuffer();
+    void clearDataBuffer();
     
   };
   

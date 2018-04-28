@@ -111,5 +111,8 @@ class Connection:
     def send_string(self, message):
         self.conn.sendString(message)
 
+    def read_from_data_channel(self):
+        return self.conn.readFromDataChannel()
+
 
 
