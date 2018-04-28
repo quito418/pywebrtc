@@ -86,7 +86,7 @@ public:
 
     std::string get_data(void) {
       std::string temp_string = data_string;
-      data_string = ""
+      data_string = "";
       return temp_string;
     }    
   
@@ -155,7 +155,7 @@ public:
 
         void OnStateChange() override {
           std::cout << "DataChannelObserver On State Change" << std::endl;
-          // TODO: Here we need to tell the socket that we something happened and for it to trigger the next part of the data channel
+
           webrtc::DataChannelInterface::DataState state = parent.data_channel->state();
           if (state == webrtc::DataChannelInterface::kOpen) {
             std::cout << "Data Channel is now open." << std::endl;
@@ -171,6 +171,7 @@ public:
           size_t size = buffer.data.size();
           std::string parsed(buffer.data.data(), size);
           data_string += parsed;
+          data_string += "\n";
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {

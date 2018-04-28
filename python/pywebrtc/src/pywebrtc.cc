@@ -121,6 +121,11 @@ extern "C" {
       }
     }
 
+    static PyObject*
+    PyWebRTCConnection_getData(PyWebRTCConnection *self){
+      PyObject *data = PyUnicode_FromString(self->connection->get_data().c_str());
+      return data;
+    }
 
     static PyMethodDef PyWebRTCConnection_methods[] = {
         {"getSDP", (PyCFunction)PyWebRTCConnection_getSDP, METH_VARARGS,
@@ -143,6 +148,9 @@ extern "C" {
         },
         {"datachannelOpen", (PyCFunction)PyWebRTCConnection_datachannelOpen, METH_VARARGS,
               "Checks if the data channel is now open"
+        },
+        {"getData", (PyCFunction)PyWebRTCConnection_getData, METH_VARARGS,
+              "Returns the data in the data channel buffer."
         },
 
 

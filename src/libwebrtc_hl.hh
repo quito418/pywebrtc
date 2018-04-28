@@ -37,6 +37,7 @@ namespace LibWebRTC {
 
     // Data transfer methods
     void sendString(const std::string& parameter);
+    std::string receiveString(void);
     bool dataChannelOpen();
     
   };
