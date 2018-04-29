@@ -92,10 +92,11 @@ class Connection:
                 self.ws.send(message)
                 print("SDP Sent!")
 
+            self.conn.addStreams()
+
             while(not self.conn.datachannelOpen()):
               time.sleep(0.1)
 
-            self.conn.addStreams()
             self.closeWebsocket()
 
                 
