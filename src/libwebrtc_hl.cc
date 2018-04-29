@@ -142,7 +142,6 @@ void LibWebRTC::WebRTCConnection::createPeerConnection() {
   configuration.servers.push_back(thirdServer);
 
   connection.peer_connection = peer_connection_factory->CreatePeerConnection(configuration, nullptr, nullptr, &connection.pco);
-  addStreams();
 
   if (connection.peer_connection.get() == nullptr) {
     peer_connection_factory = nullptr;
