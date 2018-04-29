@@ -4,8 +4,14 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <map>
 
 #include "connection.hh"
+#include <webrtc/api/mediastreaminterface.h>
+
+namespace cricket {
+  class VideoRenderer;
+}
 
 namespace LibWebRTC {
 
@@ -21,9 +27,14 @@ namespace LibWebRTC {
     rtc::PhysicalSocketServer socket_server;
     rtc::scoped_refptr<webrtc::DataChannelInterface> channel;
     std::mutex peer_connection_factory_mutex;
+    std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >
+      active_streams_;
 
     void createPeerConnection(void);
     void disconnectFromCurrentPeer(void);    
+
+    void addStreams();
+    std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice();
 
   public:
     WebRTCConnection(std::string kind);

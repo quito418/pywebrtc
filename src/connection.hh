@@ -9,6 +9,8 @@
 #include <webrtc/base/thread.h>
 #include <webrtc/base/flags.h>
 #include <webrtc/base/physicalsocketserver.h>
+#include <webrtc/api/audio_codecs/builtin_audio_decoder_factory.h>
+#include <webrtc/api/audio_codecs/builtin_audio_encoder_factory.h>
 
 #include "picojson.h"
 
@@ -28,7 +30,7 @@ public:
   {}
     
   void Run(rtc::Thread* subthread) override {
-      peer_connection_factory_ = webrtc::CreatePeerConnectionFactory();
+      peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(webrtc::CreateBuiltinAudioEncoderFactory(), webrtc::CreateBuiltinAudioDecoderFactory());
       peer_connection_factory_mutex_.unlock();
       if (peer_connection_factory_.get() == nullptr) {
         std::cout << "Error on CreatePeerConnectionFactory." << std::endl;
@@ -109,7 +111,7 @@ public:
         };
 
         void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
-          std::cout << "PeerConnectionObserver Add Stream" << std::endl;
+          std::cout << "PeerConnectionObserver Add Stream" << stream->label() << std::endl;
         };
 
         void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
