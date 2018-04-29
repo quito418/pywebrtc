@@ -22,7 +22,6 @@ args = parser.parse_args()
 conn = pywebrtc.Connection(args.type[0], args.id[0], "wss://ccr-frontend-0.jemmons.us/ccr")
 conn.run_websocket()
 conn.send_string('hi!')
-conn.addStreams()
 contents = conn.read_from_data_channel()
 while(True):
   contents = conn.read_from_data_channel()

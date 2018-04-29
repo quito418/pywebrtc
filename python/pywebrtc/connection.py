@@ -95,6 +95,7 @@ class Connection:
             while(not self.conn.datachannelOpen()):
               time.sleep(0.1)
 
+            self.conn.addStreams()
             self.closeWebsocket()
 
                 
