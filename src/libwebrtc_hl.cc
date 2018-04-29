@@ -132,6 +132,10 @@ std::string LibWebRTC::WebRTCConnection::receiveOffer(const std::string& paramet
 
   connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
 
+  webrtc::DataChannelInit config;
+  connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
+  connection.data_channel->RegisterObserver(&connection.dco);
+
   connection.sdp_type = "answer";
   connection.peer_connection->CreateAnswer(connection.csdo, nullptr);
 
