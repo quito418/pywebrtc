@@ -4,6 +4,16 @@
 
 ## How to build
 
+```
+# download the libwebrtc precompiled library (not necessary if libwebrtc is installed already)
+# https://drive.google.com/file/d/1pRqARD-YQwXj12n1RgQMhS5E9Ega2ogH/view?usp=sharing
+tar xf libwebrtc.tar
+
+# set your CFLAGS and LDFLAGS so the code will compile
+export CFLAGS=$(pwd)/libwebrtc/out/include
+export LDFLAGS=$(pwd)/libwebrtc/out/lib
+```
+
 ```bash
 ./autogen.sh
 ./configure
