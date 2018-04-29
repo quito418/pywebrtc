@@ -114,5 +114,8 @@ class Connection:
     def read_from_data_channel(self):
         return self.conn.readFromDataChannel()
 
+    def add_streams(self):
+        return self.conn.add_streams()
+
 
 
