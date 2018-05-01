@@ -39,6 +39,8 @@ LibWebRTC::WebRTCConnection::WebRTCConnection(std::string kind) :
   peer_connection_factory_mutex.unlock();
 
   createPeerConnection();
+
+  addStreams();
   
 }
 
