@@ -78,8 +78,12 @@ void LibWebRTC::WebRTCConnection::addStreams() {
       peer_connection_factory->CreateLocalMediaStream("stream_id");
 
   stream->AddTrack(audio_track);
-  if (video_track)
-    stream->AddTrack(video_track);
+  if (video_track) {
+    std::cout << "We've added the video track to the stream" << std::endl;
+
+    auto error = stream->AddTrack(video_track);
+    std::cout << "Test output: " << error << std::endl;
+  }
 
   if (!connection.peer_connection->AddStream(stream)) {
     std::cout << "Adding stream to PeerConnection failed" << std::endl;
@@ -87,6 +91,7 @@ void LibWebRTC::WebRTCConnection::addStreams() {
   typedef std::pair<std::string,
                     rtc::scoped_refptr<webrtc::MediaStreamInterface> >
       MediaStreamPair;
+  std::cout << "Stream Label is: " << stream->label() << std::endl;
   active_streams_.insert(MediaStreamPair(stream->label(), stream));
 }
 
