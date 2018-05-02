@@ -40,7 +40,7 @@ LibWebRTC::WebRTCConnection::WebRTCConnection(std::string kind) :
 
   createPeerConnection();
 
-  addStreams();
+  //addStreams();
   
 }
 
@@ -174,13 +174,17 @@ void LibWebRTC::WebRTCConnection::disconnectFromCurrentPeer(void) {
 std::string LibWebRTC::WebRTCConnection::get_offer(void) {
 
   webrtc::DataChannelInit config;
-  connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
-  connection.data_channel->RegisterObserver(&connection.dco);
+  //connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
+  //connection.data_channel->RegisterObserver(&connection.dco);
 
+  std::cout << "IN GET_OFFER ***************************" <<std::endl ;
   connection.sdp_type = "offer"; 
   connection.peer_connection->CreateOffer(connection.csdo, nullptr);
 
+  //connection.peer_connection->setLocalDescription(connection.ssdo, nullptr);
   std::string offer = connection.get_sdp();
+
+  
 
   return offer;
 }
@@ -211,8 +215,8 @@ std::string LibWebRTC::WebRTCConnection::receiveOffer(const std::string& paramet
   connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
 
   webrtc::DataChannelInit config;
-  connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
-  connection.data_channel->RegisterObserver(&connection.dco);
+  //connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
+  //connection.data_channel->RegisterObserver(&connection.dco);
 
   connection.sdp_type = "answer";
   connection.peer_connection->CreateAnswer(connection.csdo, nullptr);

@@ -66,7 +66,9 @@ public:
 
     // On session success, set local description and send information to remote
     void sessionSuccess(webrtc::SessionDescriptionInterface* desc) {
+      std::cout<< "Session success   " << sdp_type << std::endl ;
       peer_connection->SetLocalDescription(ssdo, desc);
+      std::cout<< "After set local" << std::endl ;
       picojson::object information;
 
       std::string sdp;
@@ -76,6 +78,8 @@ public:
 
 
       offer = picojson::value(information).serialize(true);
+
+      std::cout<< "Pico JSON offer:    " << offer << std::endl ;
       offer_set.store(true);
       std::cout << "Calling python success callback" << std::endl;
     }
@@ -83,6 +87,7 @@ public:
     std::string get_sdp(void) {
       while(!offer_set.load()) {  }
 
+      offer_set.store(false);
       return offer;    
     }
 
