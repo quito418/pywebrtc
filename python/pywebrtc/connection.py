@@ -96,7 +96,15 @@ class Connection:
             while(not self.conn.datachannelOpen()):
               time.sleep(0.1)
 
-            self.closeWebsocket()
+            self.conn.addStreams()
+            sdp = self.conn.getSDP()
+            print("Sending SDP")
+            sdpValues = {"type": "offer", "sdp": json.loads(sdp)}            
+            message = json.dumps(sdpValues)
+            print("Message: "+message)
+            self.ws.send(message)
+            print("SDP Sent!")
+            #self.closeWebsocket()
 
                 
         thread.start_new_thread(run, ())
