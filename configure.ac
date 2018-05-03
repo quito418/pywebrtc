@@ -21,7 +21,7 @@ AC_SUBST([CXX14_FLAGS])
 AC_SUBST([PICKY_CXXFLAGS])
 
 # add flags for python wrapper compilation
-PYWRAPPER_EXTRA_CFLAGS="-std=c++14 -Wall -Wextra -Weffc++"
+PYWRAPPER_EXTRA_CFLAGS="" #-std=c++14 -Wall -Wextra -Weffc++"
 PYWRAPPER_EXTRA_LDFLAGS=""
 AC_SUBST([PYWRAPPER_EXTRA_CFLAGS])
 AC_SUBST([PYWRAPPER_EXTRA_LDFLAGS])

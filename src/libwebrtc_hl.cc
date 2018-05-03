@@ -86,7 +86,8 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
     if (!result_or_error->track()) {
       std::cout << "Failed to add video track to PeerConnection: " << std::endl;
     }
-  } else {
+  }
+  else {
     std::cout << "OpenVideoCaptureDevice failed" << std::endl;
   }
 
