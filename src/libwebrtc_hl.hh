@@ -33,7 +33,7 @@ namespace LibWebRTC {
     void createPeerConnection(void);
     void disconnectFromCurrentPeer(void);    
 
-    std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice();
+    std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice(const std::string& deviceId);
 
   public:
     WebRTCConnection(std::string kind);
@@ -53,7 +53,7 @@ namespace LibWebRTC {
     bool peerConnectionFailed();
     std::vector<std::string> dataBuffer();
     void clearDataBuffer();
-    void addTracks(int deviceId);
+    void addTracks(const std::string& deviceId);
     
   };
 }

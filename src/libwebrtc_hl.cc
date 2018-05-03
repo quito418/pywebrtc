@@ -52,7 +52,7 @@ LibWebRTC::WebRTCConnection::~WebRTCConnection(void) {
 
 }
 
-void LibWebRTC::WebRTCConnection::addTracks(int deviceId) {
+void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
   if (!connection.peer_connection->GetSenders().empty()) {
     return;  // Already added tracks.
   }
@@ -75,7 +75,7 @@ void LibWebRTC::WebRTCConnection::addTracks(int deviceId) {
   }
 
   std::unique_ptr<cricket::VideoCapturer> video_device =
-      OpenVideoCaptureDevice();
+      OpenVideoCaptureDevice(deviceId);
   if (video_device) {
     rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track_(
         peer_connection_factory->CreateVideoTrack(
@@ -92,7 +92,7 @@ void LibWebRTC::WebRTCConnection::addTracks(int deviceId) {
 
 }
 
-std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCaptureDevice() {
+std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCaptureDevice(const std::string&deviceId) {
   std::vector<std::string> device_names;
   {
     std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(
@@ -107,12 +107,9 @@ std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCa
       char name[kSize] = {0};
       char id[kSize] = {0};
       if (info->GetDeviceName(i, name, kSize, id, kSize) != -1) {
-        if(id == "platform:v4l2loopback-001") {
-          std::cout << "Found video device" << std:endl;
+        if(id == deviceId) {
+          std::cout << "Found video device" << std::endl;
           device_names.push_back(name);
-        }
-        else {
-          std::cout << "Unable to find video device" << std::endl;
         }
       }
     }

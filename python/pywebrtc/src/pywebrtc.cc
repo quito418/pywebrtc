@@ -158,8 +158,8 @@ extern "C" {
 
     static PyObject*
     PyWebRTCConnection_addTracks(PyWebRTCConnection *self, PyObject *args){
-      int deviceId;
-      if (!PyArg_ParseTuple(args, "i",
+      char* deviceId; 
+      if (!PyArg_ParseTuple(args, "s",
 			    &deviceId)){ 
         return 0;
       }
