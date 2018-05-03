@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <vector>
 
 #include <webrtc/api/mediastreaminterface.h>
@@ -47,6 +49,7 @@ private:
   std::atomic<bool> offer_set;
 
   std::mutex data_buffer_mutex;
+  std::condition_variable data_buffer_cv;
   std::vector<std::string> data_buffer;
   
 public:
@@ -62,9 +65,12 @@ public:
     // ICE Information
     picojson::array ice_array;
 
+    // TODO make this not as stupid...
     std::vector<std::string> getDataBuffer() {
-      std::lock_guard<std::mutex> lg(data_buffer_mutex);
-
+      std::unique_lock<std::mutex> lg(data_buffer_mutex);
+      
+      data_buffer_cv.wait(lg, [&](){ return !data_buffer.empty(); });
+      
       std::vector<std::string> messages;
       for(auto message : data_buffer) {
 	messages.push_back(message);
@@ -176,10 +182,13 @@ public:
         void OnMessage(const webrtc::DataBuffer& buffer) override {
           std::cout << "DataChannelObserver On Message" << std::endl;
           std::string buffer_contents = std::string(buffer.data.data<char>(), buffer.data.size());
-          std::cout << buffer_contents << std::endl;
+          //std::cout << buffer_contents << std::endl;
 
-	  std::lock_guard<std::mutex> lg(parent.data_buffer_mutex);
-          parent.data_buffer.push_back(buffer_contents);
+	  {
+	    std::unique_lock<std::mutex> lg(parent.data_buffer_mutex);
+	    parent.data_buffer.push_back(buffer_contents);
+	  }
+	  parent.data_buffer_cv.notify_all();
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {

@@ -280,7 +280,3 @@ bool LibWebRTC::WebRTCConnection::peerConnectionFailed() {
 std::vector<std::string> LibWebRTC::WebRTCConnection::dataBuffer() {
   return connection.getDataBuffer();
 }
-
-//void LibWebRTC::WebRTCConnection::clearDataBuffer() {
-//  connection.data_buffer.clear();
-//}
