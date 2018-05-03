@@ -58,13 +58,8 @@ public:
     std::string sdp_type;
     // ICE Information
     picojson::array ice_array;
+
     std::vector<std::string> data_buffer;
-
-    //websocket::stream<<ssl::stream<tcp::socket>>* ws;
-
-    /*void initWebSocket(websocket::stream<ssl::stream<tcp::socket>>& ws_) {
-        ws = ws_;
-    }*/
 
     // On session success, set local description and send information to remote
     void sessionSuccess(webrtc::SessionDescriptionInterface* desc) {
