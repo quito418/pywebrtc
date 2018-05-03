@@ -45,6 +45,9 @@ class Connection {
 private:
   std::string offer;
   std::atomic<bool> offer_set;
+
+  std::mutex data_buffer_mutex;
+  std::vector<std::string> data_buffer;
   
 public:
     std::atomic<bool> data_channel_open;
@@ -59,8 +62,18 @@ public:
     // ICE Information
     picojson::array ice_array;
 
-    std::vector<std::string> data_buffer;
+    std::vector<std::string> getDataBuffer() {
+      std::lock_guard<std::mutex> lg(data_buffer_mutex);
 
+      std::vector<std::string> messages;
+      for(auto message : data_buffer) {
+	messages.push_back(message);
+      }
+      data_buffer = std::vector<std::string>();
+
+      return messages;
+    }
+  
     // On session success, set local description and send information to remote
     void sessionSuccess(webrtc::SessionDescriptionInterface* desc) {
       std::cout<< "Session success   " << sdp_type << std::endl ;
@@ -164,6 +177,8 @@ public:
           std::cout << "DataChannelObserver On Message" << std::endl;
           std::string buffer_contents = std::string(buffer.data.data<char>(), buffer.data.size());
           std::cout << buffer_contents << std::endl;
+
+	  std::lock_guard<std::mutex> lg(parent.data_buffer_mutex);
           parent.data_buffer.push_back(buffer_contents);
         };
 

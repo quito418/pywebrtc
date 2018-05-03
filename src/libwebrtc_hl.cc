@@ -16,7 +16,7 @@
 
 extern const size_t WebRTCConnectionSize = sizeof(LibWebRTC::WebRTCConnection);
 
-LibWebRTC::WebRTCConnection::WebRTCConnection(std::string kind) :
+LibWebRTC::WebRTCConnection::WebRTCConnection(std::string) :
   connection(),
   runnable(peer_connection_factory, peer_connection_factory_mutex)
 {
@@ -278,9 +278,9 @@ bool LibWebRTC::WebRTCConnection::peerConnectionFailed() {
 }
 
 std::vector<std::string> LibWebRTC::WebRTCConnection::dataBuffer() {
-  return connection.data_buffer;
+  return connection.getDataBuffer();
 }
 
-void LibWebRTC::WebRTCConnection::clearDataBuffer() {
-  connection.data_buffer.clear();
-}
+//void LibWebRTC::WebRTCConnection::clearDataBuffer() {
+//  connection.data_buffer.clear();
+//}
