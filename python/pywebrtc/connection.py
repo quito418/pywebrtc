@@ -69,7 +69,7 @@ class Connection:
             time.sleep(0.1)
             
         # add video/audio streams
-        self.rtc_connection.addStreams()
+        self.rtc_connection.addTracks(0)
         sdp = self.rtc_connection.getSDP()
         
         self.logger.info("Sending SDP")

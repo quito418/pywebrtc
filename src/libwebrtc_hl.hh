@@ -51,7 +51,7 @@ namespace LibWebRTC {
     bool dataChannelOpen();
     std::vector<std::string> dataBuffer();
     void clearDataBuffer();
-    void addStreams();
+    void addTracks(int deviceId);
     
   };
   
