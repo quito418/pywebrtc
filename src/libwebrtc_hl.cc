@@ -265,8 +265,15 @@ void LibWebRTC::WebRTCConnection::sendString(const std::string& parameter) {
 }
 
 bool LibWebRTC::WebRTCConnection::dataChannelOpen() {
-  return connection.datachannel_open.load();
+  return connection.data_channel_open.load();
+}
 
+bool LibWebRTC::WebRTCConnection::videoStreamOpen() {
+  return connection.video_stream_open.load();
+}
+
+bool LibWebRTC::WebRTCConnection::peerConnectionFailed() {
+  return connection.peer_connection_failed.load();
 }
 
 std::vector<std::string> LibWebRTC::WebRTCConnection::dataBuffer() {

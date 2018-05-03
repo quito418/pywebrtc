@@ -111,8 +111,28 @@ extern "C" {
     }
 
     static PyObject*
-    PyWebRTCConnection_datachannelOpen(PyWebRTCConnection *self){
+    PyWebRTCConnection_dataChannelOpen(PyWebRTCConnection *self){
       if(self->connection->dataChannelOpen()) {
+        Py_RETURN_TRUE;
+      }
+      else {
+        Py_RETURN_FALSE;
+      }
+    }
+
+    static PyObject*
+    PyWebRTCConnection_videoStreamOpen(PyWebRTCConnection *self){
+      if(self->connection->videoStreamOpen()) {
+        Py_RETURN_TRUE;
+      }
+      else {
+        Py_RETURN_FALSE;
+      }
+    }
+
+    static PyObject*
+    PyWebRTCConnection_peerConnectionFailed(PyWebRTCConnection *self){
+      if(self->connection->peerConnectionFailed()) {
         Py_RETURN_TRUE;
       }
       else {
@@ -159,10 +179,16 @@ extern "C" {
               "Adds the ICE Candidate to the peer connection."
         },
         {"sendString", (PyCFunction)PyWebRTCConnection_sendString, METH_VARARGS,
-              "Sends a string through the data channel"
+              "Sends a string through the data channel."
         },
-        {"datachannelOpen", (PyCFunction)PyWebRTCConnection_datachannelOpen, METH_VARARGS,
-              "Checks if the data channel is now open"
+        {"dataChannelOpen", (PyCFunction)PyWebRTCConnection_dataChannelOpen, METH_VARARGS,
+              "Checks if the data channel is now open."
+        },
+        {"videoStreamOpen", (PyCFunction)PyWebRTCConnection_videoStreamOpen, METH_VARARGS,
+              "Checks if the video stream is now open."
+        },
+        {"peerConnectionFailed", (PyCFunction)PyWebRTCConnection_peerConnectionFailed, METH_VARARGS,
+              "Checks if establishing a peer connection has encountered a failure."
         },
         {"readFromDataChannel", (PyCFunction)PyWebRTCConnection_readFromDataChannel, METH_VARARGS,
               "Returns a list of strings received by the data channel in oldest to newest order. Clears the buffer after calling."

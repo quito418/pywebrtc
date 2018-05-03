@@ -93,8 +93,10 @@ class Connection:
                 print("SDP Sent!")
 
 
-            while(not self.conn.datachannelOpen()):
+            print(self.conn.dataChannelOpen(), self.conn.videoStreamOpen(), self.conn.peerConnectionFailed())
+            while(not self.conn.dataChannelOpen()):
               time.sleep(0.1)
+            print(self.conn.dataChannelOpen(), self.conn.videoStreamOpen(), self.conn.peerConnectionFailed())
 
             self.conn.addStreams()
             sdp = self.conn.getSDP()
@@ -104,7 +106,10 @@ class Connection:
             print("Message: "+message)
             self.ws.send(message)
             print("SDP Sent!")
-            #self.closeWebsocket()
+            while(not self.conn.videoStreamOpen()):
+              time.sleep(0.1)
+              print(self.conn.dataChannelOpen(), self.conn.videoStreamOpen(), self.conn.peerConnectionFailed())
+            self.closeWebsocket()
 
                 
         thread.start_new_thread(run, ())
