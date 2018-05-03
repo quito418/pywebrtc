@@ -47,7 +47,9 @@ private:
   std::atomic<bool> offer_set;
   
 public:
-    std::atomic<bool> datachannel_open;
+    std::atomic<bool> data_channel_open;
+    std::atomic<bool> video_stream_open;
+    std::atomic<bool> peer_connection_failed;
     // Peer Connection
     rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection;
     // Data Channel
@@ -159,8 +161,7 @@ public:
           webrtc::DataChannelInterface::DataState state = parent.data_channel->state();
           if (state == webrtc::DataChannelInterface::kOpen) {
             std::cout << "Data Channel is now open." << std::endl;
-            parent.datachannel_open.store(true);
-            std::cout << "Datachannel_open: " << parent.datachannel_open.load() << std::endl;
+            parent.data_channel_open.store(true);
           }
         };
 
@@ -190,6 +191,7 @@ public:
 
         void OnFailure(const std::string& error) override {
           std::cout << "CreateSessionDescriptionObserver Failure Callback. Error: " << error << std::endl;
+          parent.peer_connection_failed.store(true);
         };
     };
 
@@ -202,13 +204,19 @@ public:
 
         void OnSuccess() override {
           std::cout << "SetSessionDescriptionObserver Success Callback" << std::endl;
+          // TODO: This is not the correct callback, video seems to be set up after python's sendCandidateInformation is finished (but nothing else is printed?)
+          if(parent.data_channel_open.load()) {
+            // parent.video_stream_open.store(true);
+            std::cout << "************* video channel open ****************" << std::endl;
+          }
         };	
 
-        void OnFailure(const std::string& error) override {
-          std::cout << "SetSessionDescriptionObserver Failure Callback" << std::endl;
-        };
+          void OnFailure(const std::string& error) override {
+            std::cout << "SetSessionDescriptionObserver Failure Callback" << std::endl;
+            parent.peer_connection_failed.store(true);
+          };
 
-    };
+      };
 
     PeerConnectionObs pco;
     DataChannelObs dco;
@@ -217,7 +225,9 @@ public:
 
    Connection() :
       offer_set(false),
-      datachannel_open(false),
+      data_channel_open(false),
+      video_stream_open(false),
+      peer_connection_failed(false),
       pco(*this),
       dco(*this),
       csdo(new rtc::RefCountedObject<CreateSessionDescriptionObs>(*this)),
