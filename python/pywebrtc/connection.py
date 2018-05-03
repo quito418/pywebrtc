@@ -76,8 +76,7 @@ class Connection:
         return self.rtc_connection.readFromDataChannel()
 
     
-    # private methods below...
-    
+    # private methods below... (don't use unless you know what you are doing)
     def _on_error(self, ws, error):
         self.logger.error('an error occured on the websocket connection to the signaliing server: ' + error)
 
