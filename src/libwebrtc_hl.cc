@@ -107,8 +107,13 @@ std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCa
       char name[kSize] = {0};
       char id[kSize] = {0};
       if (info->GetDeviceName(i, name, kSize, id, kSize) != -1) {
-        device_names.push_back(name);
-        std::cout << "Name of Device: " << name << " and Device Id for device is: " << id << std::endl;
+        if(id == "platform:v4l2loopback-001") {
+          std::cout << "Found video device" << std:endl;
+          device_names.push_back(name);
+        }
+        else {
+          std::cout << "Unable to find video device" << std::endl;
+        }
       }
     }
   }
