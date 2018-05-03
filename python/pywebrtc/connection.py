@@ -1,135 +1,138 @@
 import pywebrtc._ext.pywebrtc as pywebrtc_wrapper
-import websocket
 import json
-try:
-    import thread
-except ImportError:
-    import _thread as thread
+import threading
 import time
+import websocket
 
+import logging; logging.basicConfig(level=logging.INFO)
 
 class Connection:
+
     
-    def __init__(self, type_, id_, signalingServer):
-        self.conn = pywebrtc_wrapper.PyWebRTCConnection()
-        #self.conn.setCloseWebsocketCallback(self.closeWebsocket)
-        self.ws = websocket.WebSocketApp(signalingServer, 
-          on_message=self.on_message,
-          on_error=self.on_error,
-          on_close=self.on_close)
-        self.ws.on_open = self.on_open
-        self.type = type_
-        self.id = {"type": "kind", "kind": type_, "connection_id": id_}
+    def __init__(self, signaling_url, signaling_id, video_device_path):
+        self.logger = logging.getLogger('signaling_id:{}_video_device_path:{}'.format(signaling_id, video_device_path))
         
+        self.signaling_url = signaling_url
+        self.signaling_id = signaling_id
+        self.signaling_kind = 'server'
+        self.signaling_thread = threading.Thread(target=self._signaling_handler)
+        
+        self.video_device_path = video_device_path
 
-    def onOffer(self, offer):
-        print("Received an offer: " + offer)
-        return self.conn.receiveOffer(offer)
+        self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection()
+        self.ws = websocket.WebSocketApp(self.signaling_url, 
+                                         on_message=self._on_message,
+                                         on_error=self._on_error,
+                                         on_close=self._on_close,
+                                         on_open = self._on_open)
 
-    def onAnswer(self, answer):
-        print("Received an answer: " + answer)
-        self.conn.receiveAnswer(answer)
+        self.id = {"type": "kind", "kind": self.signaling_kind, "connection_id": self.signaling_id}
+
+
+    def wait_for_client(self):
+        self.ws.run_forever()
+        self.signaling_thread.join()
+
+        
+    def send_message(self, message):
+        self.rtc_connection.sendString(message)
+
+        
+    def receive_messages(self):
+        return self.rtc_connection.readFromDataChannel()
 
     
-    def onCandidate(self, candidate):
-        print("Received a candidate: " + candidate)
-        self.conn.setICEInformation(candidate) 
+    def _on_error(self, ws, error):
+        self.logger.error("an error occured on the websocket connection to the signaliing server: " + error)
 
-    def sendCandidateInformation(self):
-        print("######### SENDING ICE INFORMATION #########")
-        jsonICE = json.loads(self.conn.getICEInformation())
+        
+    def _on_close(self, ws):
+        self.logger.info("websocket closed")
+
+        
+    def _on_open(self, ws):
+        self.logger.info("websocket open")
+        self.signaling_thread.start()
+
+        
+    def _signaling_handler(self):
+
+        # Send information about ourselves
+        self.logger.info("Sending Kind")
+        message = json.dumps(self.id) 
+        self.ws.send(message)
+        
+        self.logger.info("kind sent! waiting for client to connect.")
+        
+        # wait until data channel is open
+        while(not self.rtc_connection.dataChannelOpen()):
+            time.sleep(0.1)
+            
+        # add video/audio streams
+        self.rtc_connection.addTracks(0)
+        sdp = self.rtc_connection.getSDP()
+        
+        self.logger.info("Sending SDP")
+        sdpValues = {"type": "offer", "sdp": json.loads(sdp)}            
+        message = json.dumps(sdpValues)
+        self.ws.send(message)
+        
+        self.logger.info("SDP Sent!")
+        
+        # wait until video and audio are ready?
+        time.sleep(5) # for now, just wait 5 seconds
+        self.ws.close()
+        
+        
+    def _on_message(self, ws, data):
+        self.logger.info("Received: " + data)
+        parsedData = json.loads(data)
+
+        if(parsedData['type'] == "offer"):
+            answer = self._on_rtc_offer(parsedData['sdp']['sdp'])
+            sdpValues = {"type": "answer", "sdp": json.loads(answer)}
+            message = json.dumps(sdpValues)
+            self.ws.send(message)
+            self._send_candidate_information()
+
+        elif(parsedData['type'] == "answer"):
+            self._on_rtc_answer(parsedData['sdp']['sdp'])
+            self._send_candidate_information()
+
+        elif(parsedData['type'] == "candidate"):
+            candidate = parsedData['candidate']
+            self._on_rtc_andidate(json.dumps([candidate]))
+
+        else:
+            error_message = "Undefined message received on from signaling server. Shutting down websocket."
+            self.logger.error(error_message)
+            raise Exception(error_message)
+            
+    def _on_rtc_offer(self, offer):
+        self.logger.info("received an offer: " + offer)
+        return self.rtc_connection.receiveOffer(offer)
+
+    
+    def _on_rtc_answer(self, answer):
+        self.logger.info("received an answer: " + answer)
+        self.rtc_connection.receiveAnswer(answer)
+
+        
+    def _on_rtc_candidate(self, candidate):
+        self.logger.info("received a candidate: " + candidate)
+        self.rtc_connection.setICEInformation(candidate) 
+
+        
+    def _send_candidate_information(self):
+        self.logger.info("sending candidate information")
+
+        jsonICE = json.loads(self.rtc_connection.getICEInformation())
         for iceCandidate in jsonICE:
             candidateValue = {"type": "candidate", "candidate": iceCandidate}
             candidateMessage = json.dumps(candidateValue)
             self.ws.send(candidateMessage)
-            print("Message: " + candidateMessage)
-        print("######## #FINISHED ICE INFORMATION #######")
+            self.logger.info("Message: " + candidateMessage)
 
-    def on_message(self, ws, data):
-        print("Received: " + data)
-        parsedData = json.loads(data)
-
-        if(parsedData['type'] == "offer"):
-            answer = self.onOffer(parsedData['sdp']['sdp'])
-            sdpValues = {"type": "answer", "sdp": json.loads(answer)}
-            message = json.dumps(sdpValues)
-            self.ws.send(message)
-            self.sendCandidateInformation()
-        elif(parsedData['type'] == "answer"):
-            self.onAnswer(parsedData['sdp']['sdp'])
-            self.sendCandidateInformation()
-        elif(parsedData['type'] == "candidate"):
-            candidate = parsedData['candidate']
-            self.onCandidate(json.dumps([candidate]))
-        else:
-            print("Undefined Message. Shutting down websocket.")
-            self.ws.close()
-
-    def on_error(self, ws, error):
-        print("Error: ")
-        print(error)
-
-    def on_close(self, ws):
-        print("Websocket Closed")
-
-    def on_open(self, ws):
-        print("Websocket Open")
-        def run(*args):
-            # Send information about ourselves
-            print("Sending Kind")
-            message = json.dumps(self.id) 
-            print("Message: "+message)
-            self.ws.send(message)
-            print("Kind sent!")
-            
-            if(self.type == "client"):
-                # Get sdp information and send offer
-                sdp = self.conn.getSDP()
-                print("Sending SDP")
-                sdpValues = {"type": "offer", "sdp": json.loads(sdp)}            
-                message = json.dumps(sdpValues)
-                print("Message: "+message)
-                self.ws.send(message)
-                print("SDP Sent!")
-
-
-            print(self.conn.dataChannelOpen(), self.conn.videoStreamOpen(), self.conn.peerConnectionFailed())
-            while(not self.conn.dataChannelOpen()):
-              time.sleep(0.1)
-            print(self.conn.dataChannelOpen(), self.conn.videoStreamOpen(), self.conn.peerConnectionFailed())
-
-            self.conn.addStreams()
-            sdp = self.conn.getSDP()
-            print("Sending SDP")
-            sdpValues = {"type": "offer", "sdp": json.loads(sdp)}            
-            message = json.dumps(sdpValues)
-            print("Message: "+message)
-            self.ws.send(message)
-            print("SDP Sent!")
-            while(not self.conn.videoStreamOpen()):
-              time.sleep(0.1)
-              print(self.conn.dataChannelOpen(), self.conn.videoStreamOpen(), self.conn.peerConnectionFailed())
-            self.closeWebsocket()
-
-                
-        thread.start_new_thread(run, ())
-
-    def closeWebsocket(self):
-      print('*************-------------closing websocket!-------------**********')
-      self.ws.close()
-    
-    def run_websocket(self):
-        #websocket.enableTrace(True)
-        self.ws.run_forever()
-
-    def send_string(self, message):
-        self.conn.sendString(message)
-
-    def read_from_data_channel(self):
-        return self.conn.readFromDataChannel()
-
-    def add_streams(self):
-        return self.conn.add_streams()
-
+        self.logger.info("done! sending candidate information")
 
 

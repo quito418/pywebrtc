@@ -53,7 +53,7 @@ namespace LibWebRTC {
     bool peerConnectionFailed();
     std::vector<std::string> dataBuffer();
     void clearDataBuffer();
-    void addStreams();
+    void addTracks(int deviceId);
     
   };
 }

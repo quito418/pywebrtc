@@ -101,7 +101,7 @@ extern "C" {
     static PyObject*
     PyWebRTCConnection_sendString(PyWebRTCConnection *self, PyObject *args){
       char *message;
-     if (!PyArg_ParseTuple(args, "s",
+      if (!PyArg_ParseTuple(args, "s",
 			    &message)){ 
         return 0;
       }
@@ -157,8 +157,14 @@ extern "C" {
     }
 
     static PyObject*
-    PyWebRTCConnection_addStreams(PyWebRTCConnection *self){
-      self->connection->addStreams();
+    PyWebRTCConnection_addTracks(PyWebRTCConnection *self, PyObject *args){
+      int deviceId;
+      if (!PyArg_ParseTuple(args, "i",
+			    &deviceId)){ 
+        return 0;
+      }
+
+      self->connection->addTracks(deviceId);
       Py_RETURN_NONE;
     }
 
@@ -193,10 +199,9 @@ extern "C" {
         {"readFromDataChannel", (PyCFunction)PyWebRTCConnection_readFromDataChannel, METH_VARARGS,
               "Returns a list of strings received by the data channel in oldest to newest order. Clears the buffer after calling."
         },
-        {"addStreams", (PyCFunction)PyWebRTCConnection_addStreams, METH_VARARGS,
-              "Adds video streams to the peer connection"
+        {"addTracks", (PyCFunction)PyWebRTCConnection_addTracks, METH_VARARGS,
+              "Adds video stream to the peer connection with a specifc device id"
         },
-
 
 
         {NULL, NULL, METH_VARARGS, ""}  /* Sentinel */
