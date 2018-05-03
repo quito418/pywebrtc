@@ -1,5 +1,6 @@
 import pywebrtc._ext.pywebrtc as pywebrtc_wrapper
 import json
+import os
 import threading
 import time
 import websocket
@@ -9,21 +10,26 @@ import logging; logging.basicConfig(level=logging.INFO)
 class Connection:
 
     
-    def __init__(self, signaling_url, signaling_id, video_device_path):
+    def __init__(self, signaling_url, signaling_id, v4l2_device_number):
         # The constructor will check the that video_device exists,
         # but it will neither establish setup the connection to the
         # client. Call `wait_for_client` once you are ready to setup
         # the connection. 
 
-        self.logger = logging.getLogger('signaling_id:{}_video_device_path:{}'.format(signaling_id, video_device_path))
+        self.logger = logging.getLogger('signaling_id:{}-v4l2_device_num:{}'.format(signaling_id, v4l2_device_number))
         
         self.signaling_url = signaling_url
         self.signaling_id = signaling_id
         self.signaling_kind = 'server'
         self.signaling_thread = threading.Thread(target=self._signaling_handler)
         
-        self.video_device_path = video_device_path
+        self.v4l2_device_number = v4l2_device_number
+        video_device_path = '/dev/video{}'.format(self.v4l2_device_number)
+        if not os.path.exists(video_device_path):
+            raise FileNotFoundError('The video device {} does not exist.'.format(video_device_path))
 
+        self.video_device_name = 'platform:v4l2loopback-{}'.format(str(self.v4l2_device_number).zfill(3))
+        
         self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection()
         self.ws = websocket.WebSocketApp(self.signaling_url, 
                                          on_message=self._on_message,
@@ -70,6 +76,8 @@ class Connection:
         return self.rtc_connection.readFromDataChannel()
 
     
+    # private methods below...
+    
     def _on_error(self, ws, error):
         self.logger.error('an error occured on the websocket connection to the signaliing server: ' + error)
 
@@ -99,7 +107,7 @@ class Connection:
             time.sleep(0.1)
             
         # add video/audio streams
-        self.rtc_connection.addTracks(0)
+        self.rtc_connection.addTracks(self.video_device_name)
         sdp = self.rtc_connection.getSDP()
         
         self.logger.info('Sending SDP')

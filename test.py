@@ -21,7 +21,7 @@ parser.add_argument('signaling_id', metavar='i', type=int,
 
 args = parser.parse_args()
 #conn = pywebrtc.Connection(args.type[0], args.id[0], "wss://ccr-frontend-0.jemmons.us/ccr")
-conn = pywebrtc.Connection("wss://ccr-frontend-0.jemmons.us/ccr", args.signaling_id, '/dev/video0')
+conn = pywebrtc.Connection("wss://ccr-frontend-0.jemmons.us/ccr", args.signaling_id, 1)
 #conn.run_websocket()
 conn.wait_for_client()
 
