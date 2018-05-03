@@ -142,7 +142,7 @@ extern "C" {
 
     static PyObject*
     PyWebRTCConnection_readFromDataChannel(PyWebRTCConnection *self){
-      size_t size = self->connection->dataBuffer().size();
+      size_t size = self->connection-dataBuffer().size();
       Py_ssize_t py_size = size;
       PyObject *list = PyList_New(py_size);
       size_t i;
