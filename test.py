@@ -25,10 +25,11 @@ conn.send_message('hi!')
 while(True):
 
   # receive messages (returns python list containing strings)
-  contents = conn.receive_messages()  
+  # the last one in the list is the most recently received 
+  contents = conn.receive_messages()
   print("Received: ", contents)
 
   # we are in the process of making the `receive_messages`
   # method blocking. Sleeping for now. 
-  time.sleep(1)
+  #time.sleep(1)
   

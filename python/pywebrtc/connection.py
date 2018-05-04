@@ -117,7 +117,7 @@ class Connection:
         self.logger.info('SDP sent')
         
         # wait until video and audio are ready?
-        time.sleep(5) # for now, just wait 5 seconds
+        time.sleep(2) # for now, just wait 5 seconds
         self.ws.close()
         
         

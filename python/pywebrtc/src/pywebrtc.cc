@@ -16,7 +16,6 @@ extern "C" {
 
     static PyObject*
     PyWebRTCConnection_new(PyTypeObject *type, PyObject *, PyObject *) {
-
         PyWebRTCConnection *self;
 
 	self = (PyWebRTCConnection*)type->tp_alloc(type, 0);
@@ -37,30 +36,28 @@ extern "C" {
     static int
     PyWebRTCConnection_init(PyWebRTCConnection *self, PyObject *args, PyObject *kwargs) {
 
-      if(sizeof(LibWebRTC::WebRTCConnection) == WebRTCConnectionSize) {
-          self->connection = new LibWebRTC::WebRTCConnection{"server"};
+	// this is John's super scary hack to get things to work...
+	if(sizeof(LibWebRTC::WebRTCConnection) == WebRTCConnectionSize) {
+	    self->connection = new LibWebRTC::WebRTCConnection{"server"};
 	}
-
-      else {
-	  uint8_t *mem = new uint8_t[WebRTCConnectionSize];
-	  self->connection = new (mem) LibWebRTC::WebRTCConnection{"server"};
+	else {
+	    uint8_t *mem = new uint8_t[WebRTCConnectionSize];
+	    self->connection = new (mem) LibWebRTC::WebRTCConnection{"server"};
 	}
 	
         return 0;
     }
+
     static PyObject*
     PyWebRTCConnection_getSDP(PyWebRTCConnection *self){
-
       PyObject *sdp = PyUnicode_FromString(self->connection->get_offer().c_str());
       return sdp;
     }
 
     static PyObject*
     PyWebRTCConnection_receiveAnswer(PyWebRTCConnection *self, PyObject *args){
-
       char *answer;
-      if (!PyArg_ParseTuple(args, "s",
-			    &answer)){
+      if (!PyArg_ParseTuple(args, "s", &answer)){
 	        return 0;
       }
       
@@ -71,8 +68,7 @@ extern "C" {
     static PyObject*
     PyWebRTCConnection_receiveOffer(PyWebRTCConnection *self, PyObject *args){
       char *offer;
-      if (!PyArg_ParseTuple(args, "s",
-			    &offer)){
+      if (!PyArg_ParseTuple(args, "s", &offer)){
         return 0;
       }
 
@@ -89,8 +85,7 @@ extern "C" {
     static PyObject*
     PyWebRTCConnection_setICEInformation(PyWebRTCConnection *self, PyObject* py_ice_info){
       char *ice_info;
-      if (!PyArg_ParseTuple(py_ice_info, "s",
-			    &ice_info)){
+      if (!PyArg_ParseTuple(py_ice_info, "s", &ice_info)){
           return 0;
       }
 
@@ -101,8 +96,7 @@ extern "C" {
     static PyObject*
     PyWebRTCConnection_sendString(PyWebRTCConnection *self, PyObject *args){
       char *message;
-      if (!PyArg_ParseTuple(args, "s",
-			    &message)){ 
+      if (!PyArg_ParseTuple(args, "s", &message)){ 
         return 0;
       }
 
@@ -142,6 +136,7 @@ extern "C" {
 
     static PyObject*
     PyWebRTCConnection_readFromDataChannel(PyWebRTCConnection *self){
+<<<<<<< HEAD
       size_t size = self->connection-dataBuffer().size();
       Py_ssize_t py_size = size;
       PyObject *list = PyList_New(py_size);
@@ -151,16 +146,26 @@ extern "C" {
           PyObject *message_string = PyUnicode_FromString(message.c_str());
           Py_ssize_t index = i;
           PyList_SetItem(list, index, message_string);
+=======
+
+      std::vector<std::string> messages = self->connection->dataBuffer();
+      PyObject *list = PyList_New(static_cast<Py_ssize_t>(messages.size()));
+
+      const Py_ssize_t size = messages.size();
+      for(Py_ssize_t i = 0; i < size; i++) {
+
+          PyObject *message_string = PyUnicode_FromString(messages[i].c_str());
+          PyList_SetItem(list, i, message_string);
+>>>>>>> 0ec281dde5b685639e82a3b8708ab4c4f19c483c
       }
-      self->connection->clearDataBuffer();
+
       return list;
     }
 
     static PyObject*
     PyWebRTCConnection_addTracks(PyWebRTCConnection *self, PyObject *args){
       char* deviceId; 
-      if (!PyArg_ParseTuple(args, "s",
-			    &deviceId)){ 
+      if (!PyArg_ParseTuple(args, "s", &deviceId)){ 
         return 0;
       }
 
@@ -202,8 +207,6 @@ extern "C" {
         {"addTracks", (PyCFunction)PyWebRTCConnection_addTracks, METH_VARARGS,
               "Adds video stream to the peer connection with a specifc device id"
         },
-
-
         {NULL, NULL, METH_VARARGS, ""}  /* Sentinel */
     };
     
@@ -261,55 +264,15 @@ extern "C" {
     struct module_state {
         PyObject *error;
     };
-
-    // static PyObject* pywebrtc_get_available_counters(void) {
-
-    //     std::vector<std::string> available_counters;
-    //     size_t num_counters;
-    //     try {
-    //         available_counters = libperf::get_counters_available();
-    //         num_counters = available_counters.size();
-    //     }
-    //     catch(const std::exception& e) {
-    //         PyErr_SetString(PyExc_ValueError, e.what());
-    //         return 0;
-    //     }
-
-    //     if(num_counters == 0){
-    //         PyErr_SetString(PyExc_ValueError, "Your system does not expose any performance counters to userspace programs! If you're on Ubuntu, try:\n\n    sudo apt-get install linux-tools-generic\n");
-    //         return 0;            
-    //     }
-        
-    //     static_assert(sizeof(Py_ssize_t) >= sizeof(size_t), "sizeof(Py_ssize_t) >= sizeof(size_t) must be true.");
-    //     PyObject* available_counters_list = PyList_New(static_cast<Py_ssize_t>(num_counters));
-    //     if(available_counters_list == NULL){
-    //         PyErr_SetString(PyExc_ValueError, "could not create a new python list to put the available counters into.");
-    //         return 0;
-    //     }
-
-    //     for(size_t i = 0; i < num_counters; i++) {
-
-    //         PyObject* counter_name = PyUnicode_FromString(available_counters[i].c_str());
-    //         if(counter_name == NULL){
-    //             PyErr_SetString(PyExc_ValueError, "could not insert counter_name string into python list.");
-    //             return 0;
-    //         }
-    //         PyList_SET_ITEM(available_counters_list, i, counter_name);
-
-    //     }
-
-    //     return available_counters_list;
-    // }
     
     static PyMethodDef module_methods[] = {
-        // { "get_available_counters", (PyCFunction)pywebrtc_get_available_counters, METH_NOARGS, NULL },
         {NULL, NULL, 0, NULL}  /* Sentinel */
     };
     
     static struct PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "pywebrtc",
-        .m_doc = "a python library for accessing CPU performance counters on linux.",
+        .m_doc = "pywebrtc.",
         .m_size = sizeof(struct module_state),
         .m_methods = module_methods,
         .m_slots = 0,
@@ -330,7 +293,7 @@ extern "C" {
         PyObject* module = PyModule_Create(&module_def);
 
         if (module == NULL){
-            PyErr_SetString(PyExc_ValueError, "could not create perlib module.");
+            PyErr_SetString(PyExc_ValueError, "could not create pywebrtc module.");
             return 0;
         }
 

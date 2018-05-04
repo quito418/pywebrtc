@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <vector>
 
 #include <webrtc/api/mediastreaminterface.h>
@@ -45,6 +47,10 @@ class Connection {
 private:
   std::string offer;
   std::atomic<bool> offer_set;
+
+  std::mutex data_buffer_mutex;
+  std::condition_variable data_buffer_cv;
+  std::vector<std::string> data_buffer;
   
 public:
     std::atomic<bool> data_channel_open;
@@ -59,8 +65,21 @@ public:
     // ICE Information
     picojson::array ice_array;
 
-    std::vector<std::string> data_buffer;
+    // TODO make this not as stupid...
+    std::vector<std::string> getDataBuffer() {
+      std::unique_lock<std::mutex> lg(data_buffer_mutex);
+      
+      data_buffer_cv.wait(lg, [&](){ return !data_buffer.empty(); });
+      
+      std::vector<std::string> messages;
+      for(auto message : data_buffer) {
+	messages.push_back(message);
+      }
+      data_buffer = std::vector<std::string>();
 
+      return messages;
+    }
+  
     // On session success, set local description and send information to remote
     void sessionSuccess(webrtc::SessionDescriptionInterface* desc) {
       std::cout<< "Session success   " << sdp_type << std::endl ;
@@ -163,8 +182,13 @@ public:
         void OnMessage(const webrtc::DataBuffer& buffer) override {
           std::cout << "DataChannelObserver On Message" << std::endl;
           std::string buffer_contents = std::string(buffer.data.data<char>(), buffer.data.size());
-          std::cout << buffer_contents << std::endl;
-          parent.data_buffer.push_back(buffer_contents);
+          //std::cout << buffer_contents << std::endl;
+
+	  {
+	    std::unique_lock<std::mutex> lg(parent.data_buffer_mutex);
+	    parent.data_buffer.push_back(buffer_contents);
+	  }
+	  parent.data_buffer_cv.notify_all();
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {
