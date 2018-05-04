@@ -9,6 +9,10 @@
 # https://drive.google.com/file/d/1pRqARD-YQwXj12n1RgQMhS5E9Ega2ogH/view?usp=sharing
 tar xf libwebrtc.tar
 
+# install libwebrtc (do this instead of CFLAGS/LDFLAGS?)
+cd libwebrtc/out
+make install
+
 # set your CFLAGS and LDFLAGS so the code will compile
 export CFLAGS=$(pwd)/libwebrtc/out/include
 export LDFLAGS=$(pwd)/libwebrtc/out/lib
