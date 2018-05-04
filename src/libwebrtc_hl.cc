@@ -162,7 +162,6 @@ void LibWebRTC::WebRTCConnection::createPeerConnection() {
 void LibWebRTC::WebRTCConnection::disconnectFromCurrentPeer(void) {
 
   // TODO: Send message to other peer to disconnect
-  active_streams_.clear();
   connection.peer_connection->Close();
   connection.peer_connection = nullptr;
   connection.data_channel = nullptr;
@@ -262,7 +261,7 @@ void LibWebRTC::WebRTCConnection::setICEInformation(const std::string& parameter
 void LibWebRTC::WebRTCConnection::sendString(const std::string& parameter) {
   webrtc::DataBuffer buffer(rtc::CopyOnWriteBuffer(parameter.c_str(), parameter.size()), true);
   std::cout << "Send '" << parameter << "': state(" << connection.data_channel->state() << ")" << std::endl;
-  connection.data_channel->Send(buffer);
+  connection.data_channel->Send(buffer, true);
 }
 
 bool LibWebRTC::WebRTCConnection::dataChannelOpen() {
