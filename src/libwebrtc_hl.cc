@@ -261,7 +261,7 @@ void LibWebRTC::WebRTCConnection::setICEInformation(const std::string& parameter
 void LibWebRTC::WebRTCConnection::sendString(const std::string& parameter) {
   webrtc::DataBuffer buffer(rtc::CopyOnWriteBuffer(parameter.c_str(), parameter.size()), true);
   std::cout << "Send '" << parameter << "': state(" << connection.data_channel->state() << ")" << std::endl;
-  connection.data_channel->Send(buffer, true);
+  connection.data_channel->Send(buffer);
 }
 
 bool LibWebRTC::WebRTCConnection::dataChannelOpen() {

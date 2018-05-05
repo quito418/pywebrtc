@@ -12,6 +12,7 @@ tar xf libwebrtc.tar
 # install libwebrtc (do this instead of CFLAGS/LDFLAGS?)
 cd libwebrtc/out
 make install
+cp lib/libwebrtc.a /usr/local/lib/
 
 # set your CFLAGS and LDFLAGS so the code will compile
 export CFLAGS=$(pwd)/libwebrtc/out/include
@@ -33,6 +34,18 @@ export PYTHONPATH=$(pwd)/python/build/lib.linux-x86_64-3.5/
 export LD_LIBRARY_PATH=$(pwd)/src/.libs/
 
 python test.py
+```
+
+To use with a python3.6 virtualenv, change configure.ac
+
+```bash
+AX_PYTHON_VERSION([3.6.5])
+```
+
+And append the following to /(venv)/bin/activate 
+```bash
+export PYTHONPATH=/home/maxspero/pywebrtc/python/build/lib.linux-x86_64-3.6/
+export LD_LIBRARY_PATH=/home/maxspero/pywebrtc/src/.libs/
 ```
 
 ## TODO list

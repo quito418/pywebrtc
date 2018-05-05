@@ -136,18 +136,6 @@ extern "C" {
 
     static PyObject*
     PyWebRTCConnection_readFromDataChannel(PyWebRTCConnection *self){
-<<<<<<< HEAD
-      size_t size = self->connection-dataBuffer().size();
-      Py_ssize_t py_size = size;
-      PyObject *list = PyList_New(py_size);
-      size_t i;
-      for(i = 0; i < size; i++) {
-          std::string message = self->connection->dataBuffer().at(i);
-          PyObject *message_string = PyUnicode_FromString(message.c_str());
-          Py_ssize_t index = i;
-          PyList_SetItem(list, index, message_string);
-=======
-
       std::vector<std::string> messages = self->connection->dataBuffer();
       PyObject *list = PyList_New(static_cast<Py_ssize_t>(messages.size()));
 
@@ -156,7 +144,6 @@ extern "C" {
 
           PyObject *message_string = PyUnicode_FromString(messages[i].c_str());
           PyList_SetItem(list, i, message_string);
->>>>>>> 0ec281dde5b685639e82a3b8708ab4c4f19c483c
       }
 
       return list;
