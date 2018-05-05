@@ -24,12 +24,13 @@ class Connection:
         self.signaling_thread = threading.Thread(target=self._signaling_handler)
         self.use_video = use_video
         
-        self.v4l2_device_number = v4l2_device_number
-        video_device_path = '/dev/video{}'.format(self.v4l2_device_number)
-        if not os.path.exists(video_device_path):
-            raise FileNotFoundError('The video device {} does not exist.'.format(video_device_path))
+        if self.use_video:
+            self.v4l2_device_number = v4l2_device_number
+            video_device_path = '/dev/video{}'.format(self.v4l2_device_number)
+            if not os.path.exists(video_device_path):
+                raise FileNotFoundError('The video device {} does not exist.'.format(video_device_path))
 
-        self.video_device_name = 'platform:v4l2loopback-{}'.format(str(self.v4l2_device_number).zfill(3))
+            self.video_device_name = 'platform:v4l2loopback-{}'.format(str(self.v4l2_device_number).zfill(3))
         
         self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection()
         self.ws = websocket.WebSocketApp(self.signaling_url, 
