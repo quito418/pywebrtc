@@ -10,7 +10,7 @@ import logging; logging.basicConfig(level=logging.INFO)
 class Connection:
 
     
-    def __init__(self, signaling_url, signaling_id, v4l2_device_number):
+    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video):
         # The constructor will check the that video_device exists,
         # but it will neither establish setup the connection to the
         # client. Call `wait_for_client` once you are ready to setup
@@ -22,6 +22,7 @@ class Connection:
         self.signaling_id = signaling_id
         self.signaling_kind = 'server'
         self.signaling_thread = threading.Thread(target=self._signaling_handler)
+        self.use_video = use_video
         
         self.v4l2_device_number = v4l2_device_number
         video_device_path = '/dev/video{}'.format(self.v4l2_device_number)
@@ -104,17 +105,18 @@ class Connection:
         # wait until data channel is open
         while(not self.rtc_connection.dataChannelOpen()):
             time.sleep(0.1)
-            
-        # add video/audio streams
-        self.rtc_connection.addTracks(self.video_device_name)
-        sdp = self.rtc_connection.getSDP()
-        
-        self.logger.info('Sending SDP')
-        sdpValues = {'type': 'offer', 'sdp': json.loads(sdp)}            
-        message = json.dumps(sdpValues)
-        self.ws.send(message)
-        
-        self.logger.info('SDP sent')
+        if self.use_video:
+              
+          # add video/audio streams
+          self.rtc_connection.addTracks(self.video_device_name)
+          sdp = self.rtc_connection.getSDP()
+          
+          self.logger.info('Sending SDP')
+          sdpValues = {'type': 'offer', 'sdp': json.loads(sdp)}            
+          message = json.dumps(sdpValues)
+          self.ws.send(message)
+          
+          self.logger.info('SDP sent')
         
         # wait until video and audio are ready?
         time.sleep(2) # for now, just wait 5 seconds
@@ -138,7 +140,7 @@ class Connection:
 
         elif(parsedData['type'] == 'candidate'):
             candidate = parsedData['candidate']
-            self._on_rtc_andidate(json.dumps([candidate]))
+            self._on_rtc_candidate(json.dumps([candidate]))
 
         else:
             error_message = 'Undefined message received on from signaling server. Shutting down websocket.'

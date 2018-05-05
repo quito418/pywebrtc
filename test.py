@@ -13,14 +13,14 @@ args = parser.parse_args()
 # signaling_url: the url of the signaling server
 # signaling_id: a python int that represents the ID of the session
 # v4l2_device_number: the index of the fake webcam (e.g. 0 for /dev/video0)
-conn = pywebrtc.Connection("wss://ccr-frontend-0.jemmons.us/ccr", args.signaling_id, 1)
+conn = pywebrtc.Connection("wss://ccr-frontend-0.jemmons.us/ccr", args.signaling_id, 1, True)
 
 # Wait for a client to connect on `args.signaling_id,` and perform signaling.
 # Once this will block until the connection it ready to use. 
 conn.wait_for_client()
 
 # send a message
-conn.send_message('hi!')
+#conn.send_message('hi!')
 
 while(True):
 
