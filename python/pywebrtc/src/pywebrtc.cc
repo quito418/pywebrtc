@@ -136,7 +136,11 @@ extern "C" {
 
     static PyObject*
     PyWebRTCConnection_readFromDataChannel(PyWebRTCConnection *self){
+
+      Py_BEGIN_ALLOW_THREADS
       std::vector<std::string> messages = self->connection->dataBuffer();
+      Py_END_ALLOW_THREADS
+      
       PyObject *list = PyList_New(static_cast<Py_ssize_t>(messages.size()));
 
       const Py_ssize_t size = messages.size();
