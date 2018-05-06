@@ -54,6 +54,7 @@ private:
   
 public:
     std::atomic<bool> data_channel_open;
+    std::atomic<bool> data_channel_closed;
     std::atomic<bool> video_stream_open;
     std::atomic<bool> peer_connection_failed;
     // Peer Connection
@@ -176,6 +177,12 @@ public:
           if (state == webrtc::DataChannelInterface::kOpen) {
             std::cout << "Data Channel is now open." << std::endl;
             parent.data_channel_open.store(true);
+            parent.data_channel_closed.store(false);
+          }
+          if (state == webrtc::DataChannelInterface::kClosed) {
+            std::cout << "Data Channel is now closed." << std::endl;
+            parent.data_channel_open.store(false);
+            parent.data_channel_closed.store(true);
           }
         };
 
@@ -245,6 +252,7 @@ public:
    Connection() :
       offer_set(false),
       data_channel_open(false),
+      data_channel_closed(true),
       video_stream_open(false),
       peer_connection_failed(false),
       pco(*this),

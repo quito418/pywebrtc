@@ -115,6 +115,16 @@ extern "C" {
     }
 
     static PyObject*
+    PyWebRTCConnection_dataChannelClosed(PyWebRTCConnection *self){
+      if(self->connection->dataChannelClosed()) {
+        Py_RETURN_TRUE;
+      }
+      else {
+        Py_RETURN_FALSE;
+      }
+    }
+
+    static PyObject*
     PyWebRTCConnection_videoStreamOpen(PyWebRTCConnection *self){
       if(self->connection->videoStreamOpen()) {
         Py_RETURN_TRUE;
@@ -187,6 +197,10 @@ extern "C" {
         {"dataChannelOpen", (PyCFunction)PyWebRTCConnection_dataChannelOpen, METH_VARARGS,
               "Checks if the data channel is now open."
         },
+        {"dataChannelClosed", (PyCFunction)PyWebRTCConnection_dataChannelOpen, METH_VARARGS,
+              "Checks if the data channel is now closed."
+        },
+
         {"videoStreamOpen", (PyCFunction)PyWebRTCConnection_videoStreamOpen, METH_VARARGS,
               "Checks if the video stream is now open."
         },
