@@ -65,7 +65,7 @@ class Connection:
 
         
     def receive_messages(self):
-        # Will return a python list of ALL recevied messages.
+        # Will return a python list of ALL received messages.
         # Will block if there are no new messages
         #
         # Note: WebRTC data channels are 'message based' meaning that
@@ -76,6 +76,9 @@ class Connection:
             raise Exception('An RTC connection to the client is not setup. Please call `wait_for_client` first.')
 
         return self.rtc_connection.readFromDataChannel()
+    
+    def is_data_channel_open(self):
+        return self.rtc_connection.dataChannelOpen()
 
     
     # private methods below... (don't use unless you know what you are doing)

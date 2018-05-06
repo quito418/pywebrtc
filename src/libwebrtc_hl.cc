@@ -268,10 +268,6 @@ bool LibWebRTC::WebRTCConnection::dataChannelOpen() {
   return connection.data_channel_open.load();
 }
 
-bool LibWebRTC::WebRTCConnection::dataChannelClosed() {
-  return connection.data_channel_closed.load();
-}
-
 bool LibWebRTC::WebRTCConnection::videoStreamOpen() {
   return connection.video_stream_open.load();
 }

@@ -47,7 +47,6 @@ namespace LibWebRTC {
     // Data transfer methods
     void sendString(const std::string& parameter);
     bool dataChannelOpen();
-    bool dataChannelClosed();
     bool videoStreamOpen();
     bool peerConnectionFailed();
     std::vector<std::string> dataBuffer();
