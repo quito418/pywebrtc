@@ -69,7 +69,7 @@ public:
     std::vector<std::string> getDataBuffer() {
       std::unique_lock<std::mutex> lg(data_buffer_mutex);
       
-      data_buffer_cv.wait(lg, [&](){ return !data_channel_open.load() || !data_channel.empty(); });
+      data_buffer_cv.wait(lg, [&](){ return !data_channel_open.load() || !data_buffer.empty(); });
       
       std::vector<std::string> messages;
       for(auto message : data_buffer) {
