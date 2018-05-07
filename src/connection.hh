@@ -69,11 +69,11 @@ public:
     std::vector<std::string> getDataBuffer() {
       std::unique_lock<std::mutex> lg(data_buffer_mutex);
       
-      data_buffer_cv.wait(lg, [&](){ return !data_buffer.empty(); });
+      data_buffer_cv.wait(lg, [&](){ return !data_channel_open.load() || !data_channel.empty(); });
       
       std::vector<std::string> messages;
       for(auto message : data_buffer) {
-	messages.push_back(message);
+	      messages.push_back(message);
       }
       data_buffer = std::vector<std::string>();
 
@@ -177,6 +177,11 @@ public:
             std::cout << "Data Channel is now open." << std::endl;
             parent.data_channel_open.store(true);
           }
+
+          if (state == webrtc::DataChannelInterface::kClosed) {
+            parent.data_channel_open.store(false);
+            parent.data_buffer_cv.notify_all();
+          }
         };
 
         void OnMessage(const webrtc::DataBuffer& buffer) override {
@@ -184,11 +189,11 @@ public:
           std::string buffer_contents = std::string(buffer.data.data<char>(), buffer.data.size());
           //std::cout << buffer_contents << std::endl;
 
-	  {
-	    std::unique_lock<std::mutex> lg(parent.data_buffer_mutex);
-	    parent.data_buffer.push_back(buffer_contents);
-	  }
-	  parent.data_buffer_cv.notify_all();
+	        {
+	          std::unique_lock<std::mutex> lg(parent.data_buffer_mutex);
+	          parent.data_buffer.push_back(buffer_contents);
+	        }
+	        parent.data_buffer_cv.notify_all();
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {
