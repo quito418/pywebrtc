@@ -10,7 +10,7 @@ import logging; logging.basicConfig(level=logging.INFO)
 class Connection:
 
     
-    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video):
+    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video, kind="server"):
         # The constructor will check the that video_device exists,
         # but it will neither establish setup the connection to the
         # client. Call `wait_for_client` once you are ready to setup
@@ -20,7 +20,7 @@ class Connection:
         
         self.signaling_url = signaling_url
         self.signaling_id = signaling_id
-        self.signaling_kind = 'server'
+        self.signaling_kind = kind
         self.signaling_thread = threading.Thread(target=self._signaling_handler)
         self.use_video = use_video
         
