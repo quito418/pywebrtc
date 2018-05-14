@@ -33,8 +33,10 @@ namespace LibWebRTC {
 
     std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice(const std::string& deviceId);
 
+    void debug(const std::string& message);
+
   public:
-    WebRTCConnection(std::string kind);
+    WebRTCConnection(std::string kind, bool debug);
     ~WebRTCConnection(void);
 
     // Handshaking methods

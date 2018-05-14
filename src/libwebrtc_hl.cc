@@ -1,6 +1,5 @@
 #define WEBRTC_LINUX 1
 #define WEBRTC_POSIX 1
-
 #include <string>
 
 #include <webrtc/api/peerconnectioninterface.h>
@@ -15,14 +14,16 @@
 #include "connection.hh"
 
 extern const size_t WebRTCConnectionSize = sizeof(LibWebRTC::WebRTCConnection);
+bool enableDebug = false;
 
-LibWebRTC::WebRTCConnection::WebRTCConnection(std::string) :
+// Constructor for WebRTCConnection
+LibWebRTC::WebRTCConnection::WebRTCConnection(std::string, bool debug = false) :
   connection(),
   runnable(peer_connection_factory, peer_connection_factory_mutex)
 {
 
-  //rtc::FlagList::SetFlagsFromCommandLine(&zero, nullptr, true);
-  //rtc::FlagList::Print(nullptr, false);
+  // Debugging
+  enableDebug = debug;
 
   thread.reset(new rtc::Thread(&socket_server));
 
@@ -34,14 +35,12 @@ LibWebRTC::WebRTCConnection::WebRTCConnection(std::string) :
   thread->Start(&runnable);
   
   // 2. Create a PeerConnection object with configuration and PeerConnectionObserver
-  //callerOffer();
   while(!peer_connection_factory_mutex.try_lock()) {}
   peer_connection_factory_mutex.unlock();
 
   createPeerConnection();
 
-  //addStreams();
-  
+
 }
 
 LibWebRTC::WebRTCConnection::~WebRTCConnection(void) {
@@ -49,9 +48,9 @@ LibWebRTC::WebRTCConnection::~WebRTCConnection(void) {
   disconnectFromCurrentPeer();
   thread.reset();
   rtc::CleanupSSL();
-
 }
 
+// Adds the media tracks for the webrtc connection
 void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
   if (!connection.peer_connection->GetSenders().empty()) {
     return;  // Already added tracks.
@@ -177,7 +176,7 @@ std::string LibWebRTC::WebRTCConnection::get_offer(void) {
   //connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
   //connection.data_channel->RegisterObserver(&connection.dco);
 
-  std::cout << "IN GET_OFFER ***************************" <<std::endl ;
+  std::cout << "GET_OFFER ***************************" <<std::endl ;
   connection.sdp_type = "offer"; 
   connection.peer_connection->CreateOffer(connection.csdo, nullptr);
 
@@ -278,4 +277,10 @@ bool LibWebRTC::WebRTCConnection::peerConnectionFailed() {
 
 std::vector<std::string> LibWebRTC::WebRTCConnection::dataBuffer() {
   return connection.getDataBuffer();
+}
+
+void LibWebRTC::WebRTCConnection::debug(const std::string& message) {
+  if(enableDebug) {
+    std::cout << message << std::endl;
+  }
 }
