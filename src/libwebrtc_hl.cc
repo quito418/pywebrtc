@@ -1,6 +1,8 @@
 #define WEBRTC_LINUX 1
 #define WEBRTC_POSIX 1
+
 #include <string>
+#include <sstream>
 
 #include <webrtc/api/peerconnectioninterface.h>
 #include <webrtc/base/ssladapter.h>
@@ -10,6 +12,7 @@
 #include <webrtc/media/engine/webrtcvideocapturerfactory.h>
 #include <webrtc/modules/video_capture/video_capture_factory.h>
 #include "webrtc/api/mediastreaminterface.h"
+
 #include "libwebrtc_hl.hh"
 #include "connection.hh"
 
@@ -70,7 +73,7 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
   auto result_or_error = connection.peer_connection->AddTrack(audio_track, streams);
  
   if (!result_or_error->track()) {
-    std::cout << "Failed to add audio track to PeerConnection: " << std::endl;
+    debug("Failed to add audio track to PeerConnection")
   }
 
   std::unique_ptr<cricket::VideoCapturer> video_device =
@@ -83,11 +86,13 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
 
     result_or_error = connection.peer_connection->AddTrack(video_track_, streams);
     if (!result_or_error->track()) {
-      std::cout << "Failed to add video track to PeerConnection: " << std::endl;
+      debug("Failed to add video track to PeerConnection");
     }
   }
   else {
-    std::cout << "OpenVideoCaptureDevice failed for device " << deviceId << std::endl;
+    std::ostringstream msg;
+    msg << "OpenVideoCaptureDevice failed for device " << deviceId;
+    debug(msg.str());
   }
 
 }
@@ -98,7 +103,7 @@ std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCa
     std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(
         webrtc::VideoCaptureFactory::CreateDeviceInfo());
     if (!info) {
-      std::cout << "Unable to find any devices" << std::endl;
+      debug("Unable to find any devices");
       return nullptr;
     }
     int num_devices = info->NumberOfDevices();
@@ -108,7 +113,9 @@ std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCa
       char id[kSize] = {0};
       if (info->GetDeviceName(i, name, kSize, id, kSize) != -1) {
         if(id == deviceId) {
-          std::cout << "Found video device" << std::endl;
+          std::ostringstream msg;
+          msg << "Found video device with id: " << id << " and name: " << name;
+          debug(msg.str());
           device_names.push_back(name);
         }
       }
@@ -118,7 +125,9 @@ std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCa
   cricket::WebRtcVideoDeviceCapturerFactory factory;
   std::unique_ptr<cricket::VideoCapturer> capturer;
   for (const auto& name : device_names) {
-    std::cout << "Create Factory for device: " << name << std::endl;
+    std::ostringstream msg;
+    msg << "Create Factory for device: " << name;
+    debug(msg.str())
     capturer = factory.Create(cricket::Device(name, 0));
     if (capturer) {
       break;
@@ -152,7 +161,7 @@ void LibWebRTC::WebRTCConnection::createPeerConnection() {
 
   if (connection.peer_connection.get() == nullptr) {
     peer_connection_factory = nullptr;
-    std::cout << "Error on CreatePeerConnection." << std::endl;
+    debug("Error on CreatePeerConnection.");
     return;
   }
 
@@ -176,7 +185,7 @@ std::string LibWebRTC::WebRTCConnection::get_offer(void) {
   //connection.data_channel = connection.peer_connection->CreateDataChannel("data_channel", &config);
   //connection.data_channel->RegisterObserver(&connection.dco);
 
-  std::cout << "GET_OFFER ***************************" <<std::endl ;
+  debug("GET_OFFER ***************************");
   connection.sdp_type = "offer"; 
   connection.peer_connection->CreateOffer(connection.csdo, nullptr);
 
@@ -193,9 +202,11 @@ void LibWebRTC::WebRTCConnection::receiveAnswer(const std::string& parameter) {
   webrtc::SessionDescriptionInterface* session_description(
       webrtc::CreateSessionDescription("answer", parameter, &error));
   if (session_description == nullptr) {
-    std::cout << "Error on CreateSessionDescription." << std::endl
+    std::ostringstream msg;
+    msg << "Error on CreateSessionDescription." << std::endl
       << error.line << std::endl
-      << error.description << std::endl;
+      << error.description;
+    debug(msg.str());
   }
   connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
 }
@@ -206,9 +217,11 @@ std::string LibWebRTC::WebRTCConnection::receiveOffer(const std::string& paramet
       webrtc::CreateSessionDescription("offer", parameter, &error));
 
   if (session_description == nullptr) {
-    std::cout << "Error on CreateSessionDescription." << std::endl
+    std::ostringstream msg;
+    msg << "Error on CreateSessionDescription." << std::endl
       << error.line << std::endl
-      << error.description << std::endl;
+      << error.description;
+    debug(msg.str());
   }
 
   connection.peer_connection->SetRemoteDescription(connection.ssdo, session_description);
@@ -235,7 +248,9 @@ void LibWebRTC::WebRTCConnection::setICEInformation(const std::string& parameter
   picojson::value v;
   std::string err = picojson::parse(v, parameter);
   if (!err.empty()) {
-    std::cout << "Error on parse json : " << err << std::endl;
+    std::ostringstream msg;
+    msg << "Error on parse json : " << err;
+    debug(msg.str());
     return;
   }
 
@@ -248,9 +263,11 @@ void LibWebRTC::WebRTCConnection::setICEInformation(const std::string& parameter
           ice_json.at("candidate").get<std::string>(),
           &err_sdp);
     if (!err_sdp.line.empty() && !err_sdp.description.empty()) {
-      std::cout << "Error on CreateIceCandidate" << std::endl
+      std::ostringstream msg;
+      msg << "Error on CreateIceCandidate" << std::endl
         << err_sdp.line << std::endl
-        << err_sdp.description << std::endl;
+        << err_sdp.description;
+      debug(msg.str());
       return;
     }
     connection.peer_connection->AddIceCandidate(ice);
@@ -259,7 +276,9 @@ void LibWebRTC::WebRTCConnection::setICEInformation(const std::string& parameter
 
 void LibWebRTC::WebRTCConnection::sendString(const std::string& parameter) {
   webrtc::DataBuffer buffer(rtc::CopyOnWriteBuffer(parameter.c_str(), parameter.size()), true);
-  std::cout << "Send '" << parameter << "': state(" << connection.data_channel->state() << ")" << std::endl;
+  std::ostringstream msg;
+  msg << "Send '" << parameter << "': state(" << connection.data_channel->state() << ")";
+  debug(msg.str());
   connection.data_channel->Send(buffer);
 }
 
