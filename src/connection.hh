@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <vector>
+#include <sstream>
 
 #include <webrtc/api/mediastreaminterface.h>
 #include <webrtc/api/peerconnectioninterface.h>
@@ -119,6 +120,11 @@ public:
       std::cout << "ICE Candidate added" << std::endl;
     }
 
+    void debug(const std::string& message) {
+      if(enableDebug) { 
+        std::cout << message << std::endl;
+      }
+    }
     // Used to receive callbacks from the PeerConnection
     class PeerConnectionObs : public webrtc::PeerConnectionObserver {
       private:
@@ -128,37 +134,41 @@ public:
         PeerConnectionObs(Connection& parent) : parent(parent) {};
 
         void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState new_state) override {
-          std::cout << "PeerConnectionObserver Signaling Change" << std::endl;
+          parent.debug("PeerConnectionObserver Signaling Change");
         };
 
         void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
-          std::cout << "PeerConnectionObserver Add Stream" << stream->label() << std::endl;
+          std::ostringstream msg;
+          msg << "PeerConnectionObserver Add Stream" << stream->label(); 
+          parent.debug(msg.str());
         };
 
         void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
-          std::cout << "PeerConnectionObserver Remove Stream" << std::endl;
+          parent.debug("PeerConnectionObserver Remove Stream");
         };
 
         void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) override {
-          std::cout << "PeerConnectionObserver On Data Channel(" << data_channel << std::endl;
+          std::ostringstream msg;
+          msg << "PeerConnectionObserver On Data Channel(" << data_channel << ")"; 
+          parent.debug(msg.str());
           parent.data_channel = data_channel;
           parent.data_channel->RegisterObserver(&parent.dco);
         };
 
         void OnRenegotiationNeeded() override {
-          std::cout << "PeerConnectionObserver On Renegotiation Needed" << std::endl;
+          parent.debug("PeerConnectionObserver On Renegotiation Needed");
         };
 
         void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState new_state) override {
-          std::cout << "PeerConnectionObserver On Ice Connection Change" << std::endl;
+          parent.debug("PeerConnectionObserver On Ice Connection Change");
         };
 
         void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState new_state) override {
-          std::cout << "PeerConnectionObserver On Ice Gathering Change" << std::endl;
+          parent.debug("PeerConnectionObserver On Ice Gathering Change");
         };
 
         void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {
-          std::cout << "PeerConnectionObserver On Ice Candidate" << std::endl;
+          parent.debug("PeerConnectionObserver On Ice Candidate");
           parent.OnIceCandidate(candidate);
         };
     };
@@ -171,10 +181,10 @@ public:
         DataChannelObs(Connection& parent) : parent(parent) {};
 
         void OnStateChange() override {
-          std::cout << "DataChannelObserver On State Change" << std::endl;
+          parent.debug("DataChannelObserver On State Change");
           webrtc::DataChannelInterface::DataState state = parent.data_channel->state();
           if (state == webrtc::DataChannelInterface::kOpen) {
-            std::cout << "Data Channel is now open." << std::endl;
+            parent.debug("Data Channel is now open.");
             parent.data_channel_open.store(true);
           }
 
@@ -185,7 +195,7 @@ public:
         };
 
         void OnMessage(const webrtc::DataBuffer& buffer) override {
-          std::cout << "DataChannelObserver On Message" << std::endl;
+          parent.debug("DataChannelObserver On Message");
           std::string buffer_contents = std::string(buffer.data.data<char>(), buffer.data.size());
           //std::cout << buffer_contents << std::endl;
 
@@ -197,7 +207,9 @@ public:
         };
 
         void OnBufferedAmountChange(uint64_t previous_amount) override {
-          std::cout << "DataChannelObserver On Buffered Amount Change: " << previous_amount << std::endl;
+          std::ostringstream msg;
+          msg << "DataChannelObserver On Buffered Amount Change: " << previous_amount; 
+          parent.debug(msg.str());
         };
     };
 
@@ -209,12 +221,14 @@ public:
         CreateSessionDescriptionObs(Connection& parent) : parent(parent) {};
 
         void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
-          std::cout << "CreateSessionDescriptionObserver Success Callback" << std::endl;
+          parent.debug("CreateSessionDescriptionObserver Success Callback");
           parent.sessionSuccess(desc);
         };	
 
         void OnFailure(const std::string& error) override {
-          std::cout << "CreateSessionDescriptionObserver Failure Callback. Error: " << error << std::endl;
+          std::ostringstream msg;
+          msg << "CreateSessionDescriptionObserver Failure Callback. Error: " << error;
+          parent.debug(msg.str());
           parent.peer_connection_failed.store(true);
         };
     };
@@ -227,16 +241,16 @@ public:
         SetSessionDescriptionObs(Connection& parent) : parent(parent) {};
 
         void OnSuccess() override {
-          std::cout << "SetSessionDescriptionObserver Success Callback" << std::endl;
+          parent.debug("SetSessionDescriptionObserver Success Callback");
           // TODO: This is not the correct callback, video seems to be set up after python's sendCandidateInformation is finished (but nothing else is printed?)
           if(parent.data_channel_open.load()) {
             // parent.video_stream_open.store(true);
-            std::cout << "************* video channel open ****************" << std::endl;
+            parent.debug("************* video channel open ****************");
           }
         };	
 
           void OnFailure(const std::string& error) override {
-            std::cout << "SetSessionDescriptionObserver Failure Callback" << std::endl;
+            parent.debug("SetSessionDescriptionObserver Failure Callback");
             parent.peer_connection_failed.store(true);
           };
 
@@ -246,8 +260,9 @@ public:
     DataChannelObs dco;
     rtc::scoped_refptr<CreateSessionDescriptionObs> csdo;
     rtc::scoped_refptr<SetSessionDescriptionObs> ssdo;
+    bool enableDebug;
 
-   Connection() :
+    Connection(bool debug = false) :
       offer_set(false),
       data_channel_open(false),
       video_stream_open(false),
@@ -255,5 +270,7 @@ public:
       pco(*this),
       dco(*this),
       csdo(new rtc::RefCountedObject<CreateSessionDescriptionObs>(*this)),
-      ssdo(new rtc::RefCountedObject<SetSessionDescriptionObs>(*this)) {}
+      ssdo(new rtc::RefCountedObject<SetSessionDescriptionObs>(*this)) {
+        enableDebug = debug;
+      }
 };

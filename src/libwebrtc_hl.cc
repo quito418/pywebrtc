@@ -21,7 +21,7 @@ bool enableDebug = false;
 
 // Constructor for WebRTCConnection
 LibWebRTC::WebRTCConnection::WebRTCConnection(std::string, bool debug = false) :
-  connection(),
+  connection(debug),
   runnable(peer_connection_factory, peer_connection_factory_mutex)
 {
 
@@ -73,7 +73,7 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
   auto result_or_error = connection.peer_connection->AddTrack(audio_track, streams);
  
   if (!result_or_error->track()) {
-    debug("Failed to add audio track to PeerConnection")
+    debug("Failed to add audio track to PeerConnection");
   }
 
   std::unique_ptr<cricket::VideoCapturer> video_device =
@@ -127,7 +127,7 @@ std::unique_ptr<cricket::VideoCapturer> LibWebRTC::WebRTCConnection::OpenVideoCa
   for (const auto& name : device_names) {
     std::ostringstream msg;
     msg << "Create Factory for device: " << name;
-    debug(msg.str())
+    debug(msg.str());
     capturer = factory.Create(cricket::Device(name, 0));
     if (capturer) {
       break;

@@ -36,13 +36,18 @@ extern "C" {
     static int
     PyWebRTCConnection_init(PyWebRTCConnection *self, PyObject *args, PyObject *kwargs) {
 
+    char *kind;
+    int debug;
+    if(!PyArg_ParseTuple(args, "si", &kind, &debug)) {
+      return 0;
+    }
 	// this is John's super scary hack to get things to work...
 	if(sizeof(LibWebRTC::WebRTCConnection) == WebRTCConnectionSize) {
-	    self->connection = new LibWebRTC::WebRTCConnection{"server"};
+	    self->connection = new LibWebRTC::WebRTCConnection{kind, debug};
 	}
 	else {
 	    uint8_t *mem = new uint8_t[WebRTCConnectionSize];
-	    self->connection = new (mem) LibWebRTC::WebRTCConnection{"server"};
+	    self->connection = new (mem) LibWebRTC::WebRTCConnection{kind, debug};
 	}
 	
         return 0;

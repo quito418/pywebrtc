@@ -10,7 +10,7 @@ import logging; logging.basicConfig(level=logging.INFO)
 class Connection:
 
     
-    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video, kind="server"):
+    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video, kind="server", webrtc_debug=False):
         # The constructor will check the that video_device exists,
         # but it will neither establish setup the connection to the
         # client. Call `wait_for_client` once you are ready to setup
@@ -32,7 +32,7 @@ class Connection:
 
             self.video_device_name = 'platform:v4l2loopback-{}'.format(str(self.v4l2_device_number).zfill(3))
         
-        self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection()
+        self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection(kind, webrtc_debug)
         self.ws = websocket.WebSocketApp(self.signaling_url, 
                                          on_message=self._on_message,
                                          on_error=self._on_error,
