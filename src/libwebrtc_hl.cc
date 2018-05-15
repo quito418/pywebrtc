@@ -65,8 +65,7 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
   std::vector<webrtc::MediaStreamInterface*> streams;
   streams.push_back(stream);
   
-  // Audio Track not needed for now
-  /*rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(
+  rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(
       peer_connection_factory->CreateAudioTrack(
           "audio_label", peer_connection_factory->CreateAudioSource(nullptr)));
 
@@ -75,7 +74,7 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
  
   if (!result_or_error->track()) {
     debug("Failed to add audio track to PeerConnection");
-  }*/
+  }
 
   std::unique_ptr<cricket::VideoCapturer> video_device =
       OpenVideoCaptureDevice(deviceId);
