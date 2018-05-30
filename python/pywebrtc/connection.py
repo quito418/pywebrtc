@@ -10,7 +10,7 @@ import logging; logging.basicConfig(level=logging.INFO)
 class Connection:
 
     
-    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video, kind="server", webrtc_debug=False):
+    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video, kind="server", timeout=5, webrtc_debug=False):
         # The constructor will check the that video_device exists,
         # but it will neither establish setup the connection to the
         # client. Call `wait_for_client` once you are ready to setup
@@ -21,7 +21,7 @@ class Connection:
         self.signaling_url = signaling_url
         self.signaling_id = signaling_id
         self.signaling_kind = kind
-        self.signaling_thread = threading.Thread(target=self._signaling_handler)
+        self.signaling_thread = threading.Thread(target=self._signaling_handler, args=(timeout))
         self.use_video = use_video
         
         if self.use_video:
@@ -95,7 +95,7 @@ class Connection:
         self.signaling_thread.start()
 
         
-    def _signaling_handler(self):
+    def _signaling_handler(self, timeout):
 
         # Send information about ourselves
         self.logger.info('Sending Kind')
@@ -107,8 +107,14 @@ class Connection:
         self.logger.info('kind sent! waiting for client to connect.')
         
         # wait until data channel is open
+        currentSleep = 0
         while(not self.rtc_connection.dataChannelOpen()):
             time.sleep(0.1)
+            currentSleep += 0.1
+            if(currentSleep > timeout):
+                self.logger.info('Attempted to connect to data channel but timeout exceeded.')
+                self.ws.close()
+                return
         if self.use_video:
               
           # add video/audio streams
