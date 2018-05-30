@@ -21,6 +21,7 @@ class Connection:
         self.signaling_url = signaling_url
         self.signaling_id = signaling_id
         self.signaling_kind = kind
+        self.timeoutOccurred = False
         self.signaling_thread = threading.Thread(target=self._signaling_handler, args=(timeout))
         self.use_video = use_video
         
@@ -52,6 +53,7 @@ class Connection:
         self.signaling_thread.join()
 
         self.rtc_connection_ready = True
+        return self.timeoutOccurred
         
         
     def send_message(self, message):
@@ -113,6 +115,7 @@ class Connection:
             currentSleep += 0.1
             if(currentSleep > timeout):
                 self.logger.info('Attempted to connect to data channel but timeout exceeded.')
+                self.timeoutOccurred = True
                 self.ws.close()
                 return
         if self.use_video:
