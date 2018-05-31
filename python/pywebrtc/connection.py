@@ -22,7 +22,7 @@ class Connection:
         self.signaling_id = signaling_id
         self.signaling_kind = kind
         self.timeoutOccurred = False
-        self.signaling_thread = threading.Thread(target=self._signaling_handler, args=(timeout))
+        self.signaling_thread = threading.Thread(target=self._signaling_handler, args=(timeout,))
         self.use_video = use_video
         
         if self.use_video:
