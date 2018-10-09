@@ -35,10 +35,10 @@ class Connection:
         
         self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection(kind, webrtc_debug)
         self.ws = websocket.WebSocketApp(self.signaling_url, 
-                                         on_message=self._on_message,
-                                         on_error=self._on_error,
-                                         on_close=self._on_close,
-                                         on_open = self._on_open)
+                                         on_message=self._on_message(),
+                                         on_error=self._on_error(),
+                                         on_close=self._on_close(),
+                                         on_open = self._on_open())
 
         self.rtc_connection_ready = False
         
@@ -84,17 +84,23 @@ class Connection:
 
     
     # private methods below... (don't use unless you know what you are doing)
-    def _on_error(self, ws, error):
-        self.logger.error('an error occured on the websocket connection to the signaliing server: ' + str(error))
+    def _on_error(self):
+        def f(ws, error):
+            self.logger.error('an error occured on the websocket connection to the signaliing server: ' + str(error))
+        return f
 
         
-    def _on_close(self, ws):
-        self.logger.info('websocket closed')
+    def _on_close(self):
+        def f(ws):
+            self.logger.info('websocket closed')
+        return f
 
         
-    def _on_open(self, ws):
-        self.logger.info('websocket open')
-        self.signaling_thread.start()
+    def _on_open(self):
+        def f(ws):
+                self.logger.info('websocket open')
+                self.signaling_thread.start()
+        return f
 
         
     def _signaling_handler(self, timeout):
@@ -132,33 +138,35 @@ class Connection:
           self.logger.info('SDP sent')
         
         # wait until video and audio are ready?
-        time.sleep(2) # for now, just wait 5 seconds
+        time.sleep(5) # for now, just wait 5 seconds
         self.ws.close()
         
         
-    def _on_message(self, ws, data):
-        self.logger.info('Received: ' + data)
-        parsedData = json.loads(data)
+    def _on_message(self):
+        def f(ws, data):
+                self.logger.info('Received: ' + data)
+                parsedData = json.loads(data)
 
-        if(parsedData['type'] == 'offer'):
-            answer = self._on_rtc_offer(parsedData['sdp']['sdp'])
-            sdpValues = {'type': 'answer', 'sdp': json.loads(answer)}
-            message = json.dumps(sdpValues)
-            self.ws.send(message)
-            self._send_candidate_information()
+                if(parsedData['type'] == 'offer'):
+                    answer = self._on_rtc_offer(parsedData['sdp']['sdp'])
+                    sdpValues = {'type': 'answer', 'sdp': json.loads(answer)}
+                    message = json.dumps(sdpValues)
+                    self.ws.send(message)
+                    self._send_candidate_information()
 
-        elif(parsedData['type'] == 'answer'):
-            self._on_rtc_answer(parsedData['sdp']['sdp'])
-            self._send_candidate_information()
+                elif(parsedData['type'] == 'answer'):
+                    self._on_rtc_answer(parsedData['sdp']['sdp'])
+                    self._send_candidate_information()
 
-        elif(parsedData['type'] == 'candidate'):
-            candidate = parsedData['candidate']
-            self._on_rtc_candidate(json.dumps([candidate]))
+                elif(parsedData['type'] == 'candidate'):
+                    candidate = parsedData['candidate']
+                    self._on_rtc_candidate(json.dumps([candidate]))
 
-        else:
-            error_message = 'Undefined message received on from signaling server. Shutting down websocket.'
-            self.logger.error(error_message)
-            raise Exception(error_message)
+                else:
+                    error_message = 'Undefined message received on from signaling server. Shutting down websocket.'
+                    self.logger.error(error_message)
+                    raise Exception(error_message)
+        return f
             
     def _on_rtc_offer(self, offer):
         self.logger.info('received an offer: ' + offer)
