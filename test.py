@@ -2,6 +2,8 @@ import websocket
 import pywebrtc
 import argparse
 import time
+import signal
+import sys
 
 parser = argparse.ArgumentParser(description='Determine Settings')
 parser.add_argument('signaling_id', metavar='i', type=int,
@@ -9,11 +11,17 @@ parser.add_argument('signaling_id', metavar='i', type=int,
 
 args = parser.parse_args()
 
+def signal_handler(sig, frame):
+    print('Ctrl+C received... exiting.')
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
+
+
 # Create the object (args below)
 # signaling_url: the url of the signaling server
 # signaling_id: a python int that represents the ID of the session
 # v4l2_device_number: the index of the fake webcam (e.g. 0 for /dev/video0)
-conn = pywebrtc.Connection("ws://localhost:8000/ccr", args.signaling_id, 0, True)
+conn = pywebrtc.Connection("ws://hal-ws.stanford.edu/ccr", args.signaling_id, 0, True)
 
 # Wait for a client to connect on `args.signaling_id,` and perform signaling.
 # Once this will block until the connection it ready to use. 

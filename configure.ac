@@ -43,7 +43,7 @@ PKG_CHECK_MODULES([LIBWEBRTC], [LibWebRTC])
 
 # check for python libraries
 AC_PATH_PROG([PYTHON],[python3])
-AX_PYTHON_VERSION([3.5.0])
+AX_PYTHON_VERSION([3.6.0])
 
 AX_PYTHON_MODULE_VERSION([setuptools], [20.7.0], [python3])
 AX_PYTHON_MODULE_VERSION([wheel], [0.29.0], [python3])

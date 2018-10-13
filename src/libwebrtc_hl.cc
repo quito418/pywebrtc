@@ -55,9 +55,7 @@ LibWebRTC::WebRTCConnection::~WebRTCConnection(void) {
 
 // Adds the media tracks for the webrtc connection
 void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
-  std::cout<<"adding track-----------------------" << deviceId << std::endl;
   if (!connection.peer_connection->GetSenders().empty()) {
-    std::cout<<"already added-----------------------" << deviceId << std::endl;
     return;  // Already added tracks.
   }
  
@@ -72,7 +70,6 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
           "audio_label", peer_connection_factory->CreateAudioSource(nullptr)));
 
   
-  std::cout<<"adding to peer connection-----------------------" << deviceId << std::endl;
   auto result_or_error = connection.peer_connection->AddTrack(audio_track, streams);
  
   if (!result_or_error->track()) {
@@ -82,7 +79,6 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
   std::unique_ptr<cricket::VideoCapturer> video_device =
       OpenVideoCaptureDevice(deviceId);
   if (video_device) {
-    std::cout<<"if video device-----------------------" << deviceId << std::endl;
     rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track_(
         peer_connection_factory->CreateVideoTrack(
             "video_label", peer_connection_factory->CreateVideoSource(
@@ -97,6 +93,7 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
     std::ostringstream msg;
     msg << "OpenVideoCaptureDevice failed for device " << deviceId;
     debug(msg.str());
+    std::cout << "OpenVideoCaptureDevice failed for device " << deviceId << std::endl;
   }
 
 }

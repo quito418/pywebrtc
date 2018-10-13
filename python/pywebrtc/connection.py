@@ -32,6 +32,7 @@ class Connection:
                 raise FileNotFoundError('The video device {} does not exist.'.format(video_device_path))
 
             self.video_device_name = 'platform:v4l2loopback-{}'.format(str(self.v4l2_device_number).zfill(3))
+            self.video_device_name = 'usb-0000:00:14.0-1'
         
         self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection(kind, webrtc_debug)
         self.ws = websocket.WebSocketApp(self.signaling_url, 
