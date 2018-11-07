@@ -4,19 +4,21 @@ import os
 import threading
 import time
 import websocket
+import signal
 
 import logging; logging.basicConfig(level=logging.INFO)
+
 
 class Connection:
 
     
-    def __init__(self, signaling_url, signaling_id, v4l2_device_number, use_video, kind="server", timeout=5, webrtc_debug=False):
+    def __init__(self, signaling_url, signaling_id, video_device_number, video_device_name, use_video, kind="server", timeout=5, webrtc_debug=False):
         # The constructor will check the that video_device exists,
         # but it will neither establish setup the connection to the
         # client. Call `wait_for_client` once you are ready to setup
         # the connection. 
 
-        self.logger = logging.getLogger('signaling_id:{}-v4l2_device_num:{}'.format(signaling_id, v4l2_device_number))
+        self.logger = logging.getLogger('signaling_id:{}-video_device_num:{}'.format(signaling_id, video_device_number))
         
         self.signaling_url = signaling_url
         self.signaling_id = signaling_id
@@ -26,14 +28,20 @@ class Connection:
         self.use_video = use_video
         
         if self.use_video:
-            self.v4l2_device_number = v4l2_device_number
-            video_device_path = '/dev/video{}'.format(self.v4l2_device_number)
+            self.video_device_number = video_device_number
+            video_device_path = '/dev/video{}'.format(self.video_device_number)
             if not os.path.exists(video_device_path):
                 raise FileNotFoundError('The video device {} does not exist.'.format(video_device_path))
 
-            self.video_device_name = 'platform:v4l2loopback-{}'.format(str(self.v4l2_device_number).zfill(3))
-            self.video_device_name = 'usb-0000:00:14.0-1'
+            self.video_device_name = video_device_name
+            # For pyfakewebcam, video device names are assigned as the following:
+            # self.video_device_name = 'platform:v4l2loopback-{}'.format(str(video_device_number).zfill(3))
+            # Otherwise, to find video device name, run:
+            # v4l2-ctl --list-devices
         
+        # Prevent python from eating ctrl-C signals
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+
         self.rtc_connection = pywebrtc_wrapper.PyWebRTCConnection(kind, webrtc_debug)
         self.ws = websocket.WebSocketApp(self.signaling_url, 
                                          on_message=self._on_message(),

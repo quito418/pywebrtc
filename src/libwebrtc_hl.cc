@@ -91,9 +91,8 @@ void LibWebRTC::WebRTCConnection::addTracks(const std::string& deviceId) {
   }
   else {
     std::ostringstream msg;
-    msg << "OpenVideoCaptureDevice failed for device " << deviceId;
+    debug("OpenVideoCaptureDevice failed for device " + deviceId);
     debug(msg.str());
-    std::cout << "OpenVideoCaptureDevice failed for device " << deviceId << std::endl;
   }
 
 }
