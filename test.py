@@ -20,7 +20,7 @@ video_device_number = 0
 # video_device_name = 'platform:v4l2loopback-{}'.format(str(video_device_number).zfill(3))
 video_device_name = "usb-0000:00:14.0-1"
 
-conn = pywebrtc.Connection(websockets_url, args.signaling_id, video_device_number, video_device_name, True)
+conn = pywebrtc.Connection(websockets_url, args.signaling_id, video_device_number, use_video=True, video_device_name=video_device_name)
 
 # Wait for a client to connect on `args.signaling_id,` and perform signaling.
 # Once this will block until the connection it ready to use. 

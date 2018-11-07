@@ -12,7 +12,7 @@ import logging; logging.basicConfig(level=logging.INFO)
 class Connection:
 
     
-    def __init__(self, signaling_url, signaling_id, video_device_number, video_device_name, use_video, kind="server", timeout=5, webrtc_debug=False):
+    def __init__(self, signaling_url, signaling_id, video_device_number, use_video=True, video_device_name=None, kind="server", timeout=5, webrtc_debug=False):
         # The constructor will check the that video_device exists,
         # but it will neither establish setup the connection to the
         # client. Call `wait_for_client` once you are ready to setup
@@ -33,11 +33,14 @@ class Connection:
             if not os.path.exists(video_device_path):
                 raise FileNotFoundError('The video device {} does not exist.'.format(video_device_path))
 
-            self.video_device_name = video_device_name
             # For pyfakewebcam, video device names are assigned as the following:
             # self.video_device_name = 'platform:v4l2loopback-{}'.format(str(video_device_number).zfill(3))
             # Otherwise, to find video device name, run:
             # v4l2-ctl --list-devices
+            if video_device_name is None:
+                self.video_device_name = 'platform:v4l2loopback-{}'.format(str(self.video_device_number).zfill(3))
+            else:
+                self.video_device_name = video_device_name
         
         # Prevent python from eating ctrl-C signals
         signal.signal(signal.SIGINT, signal.SIG_DFL)
