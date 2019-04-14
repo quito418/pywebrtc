@@ -44,8 +44,8 @@ AX_PYTHON_VERSION([3.6.5])
 
 And append the following to /(venv)/bin/activate 
 ```bash
-export PYTHONPATH=/home/maxspero/pywebrtc/python/build/lib.linux-x86_64-3.6/
-export LD_LIBRARY_PATH=/home/maxspero/pywebrtc/src/.libs/
+export PYTHONPATH=/home/tom418/pywebrtc/python/build/lib.linux-x86_64-3.6/
+export LD_LIBRARY_PATH=/home/tom418/pywebrtc/src/.libs/
 ```
 
 ## TODO list
